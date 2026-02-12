@@ -356,7 +356,81 @@
         </div>
       </div>
     </div>
+    <!-- Edit Info Modal -->
+    <div id="editModal" class="modal-overlay">
+      <div class="modal edit-modal">
+        <div class="modal-header">
+          <div class="modal-title">✏️ 작품 정보 편집</div>
+          <button class="modal-close" onclick="closeEditModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <!-- 커버 이미지 -->
+          <div class="edit-cover-section">
+            <div class="edit-cover-preview">
+              <img id="editCoverPreview" src="" alt="커버">
+              <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
+            </div>
+            <div class="edit-cover-actions">
+              <label class="btn btn-upload" for="editCoverFile">📷 커버 업로드</label>
+              <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
+              <div class="edit-cover-filename" id="editCoverFilename"></div>
+            </div>
+          </div>
 
+          <!-- 편집 폼 -->
+          <div class="edit-form">
+            <div class="edit-field">
+              <label>제목</label>
+              <input type="text" id="editTitle" placeholder="작품 제목">
+            </div>
+            <div class="edit-field">
+              <label>소스 ID</label>
+              <input type="text" id="editSourceId" placeholder="토키 사이트 번호">
+            </div>
+            <div class="edit-field">
+              <label>작가</label>
+              <input type="text" id="editAuthor" placeholder="작가명 (여러명: 쉼표 구분)">
+            </div>
+            <div class="edit-field">
+              <label>연재상태</label>
+              <select id="editStatus">
+                <option value="Unknown">Unknown</option>
+                <option value="연재중">연재중</option>
+                <option value="완결">완결</option>
+                <option value="휴재">휴재</option>
+              </select>
+            </div>
+            <div class="edit-field">
+              <label>플랫폼</label>
+              <select id="editPublisher">
+                <option value="">선택</option>
+                <option value="마나토끼">마나토끼</option>
+                <option value="뉴토끼">뉴토끼</option>
+                <option value="북토끼">북토끼</option>
+              </select>
+            </div>
+            <div class="edit-field">
+              <label>카테고리</label>
+              <select id="editCategory">
+                <option value="Manga">만화 (Manga)</option>
+                <option value="Webtoon">웹툰 (Webtoon)</option>
+                <option value="Novel">소설 (Novel)</option>
+              </select>
+            </div>
+            <div class="edit-field">
+              <label>원본 URL</label>
+              <input type="text" id="editUrl" placeholder="https://...">
+            </div>
+          </div>
+
+          <!-- 버튼 -->
+          <div class="edit-buttons">
+            <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
+            <button class="btn edit-btn-save" onclick="saveEditInfo()">💾 저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- 2. Episode Modal -->
     <div id="episodeModal" class="modal-overlay">
       <div class="modal">
