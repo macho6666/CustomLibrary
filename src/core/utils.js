@@ -1,0 +1,261 @@
+import { uploadToGAS } from './gas.js';
+import { LogBox, Notifier } from './ui.js';
+
+export async function blobToArrayBuffer(blob) {
+    if (blob.arrayBuffer) {
+        return await blob.arrayBuffer();
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+    });
+}
+
+export function sleep(ms, randomRange) {
+    if (randomRange) {
+        ms = Math.floor(Math.random() * randomRange) + ms;
+    }
+    return new Promise(resolve => {
+        setTimeout(() => resolve(), ms);
+    });
+}
+
+export function getCommonPrefix(str1, str2) {
+    if (!str1 || !str2) return '';
+    let i = 0;
+    while (i < str1.length && i < str2.length && str1[i] === str2[i]) {
+        i++;
+    }
+    let prefix = str1.substring(0, i).trim();
+    
+    // Remove trailing partial numbers (e.g. "인싸 공명 1" → "인싸 공명")
+    // Stop at last word boundary before a number
+    prefix = prefix.replace(/\s+\d+$/, '');
+    
+    return prefix;
+}
+
+export async function waitIframeLoad(iframe, url) {
+    return new Promise((resolve) => {
+        const handler = async () => {
+            iframe.removeEventListener('load', handler);
+            
+            // Wait a bit for DOM to settle
+            await sleep(500);
+            
+            // Captcha Detection
+            let isCaptcha = false;
+            let isCloudflare = false;
+            
+            try {
+                const iframeDoc = iframe.contentWindow.document;
+                console.log('[Captcha Debug] iframe URL:', iframe.contentWindow.location.href);
+                console.log('[Captcha Debug] iframe title:', iframeDoc.title);
+                
+                // Check for various captcha types
+                const hcaptcha = iframeDoc.querySelector('iframe[src*="hcaptcha"]');
+                const recaptcha = iframeDoc.querySelector('.g-recaptcha');
+                
+                // Gnuboard captcha (corrected selectors based on actual HTML)
+                const kcaptchaFieldset = iframeDoc.querySelector('fieldset#captcha, fieldset.captcha');
+                const kcaptchaImg = iframeDoc.querySelector('img.captcha_img, img[src*="kcaptcha_image.php"]');
+                const kcaptchaForm = iframeDoc.querySelector('form[action*="captcha_check.php"]');
+                const kcaptcha = kcaptchaFieldset || kcaptchaImg || kcaptchaForm;
+                
+                console.log('[Captcha Debug] hCaptcha:', !!hcaptcha);
+                console.log('[Captcha Debug] reCaptcha:', !!recaptcha);
+                console.log('[Captcha Debug] Gnuboard kCaptcha:', !!kcaptcha);
+                if (kcaptcha) {
+                    console.log('[Captcha Debug] - fieldset:', !!kcaptchaFieldset);
+                    console.log('[Captcha Debug] - img:', !!kcaptchaImg);
+                    console.log('[Captcha Debug] - form:', !!kcaptchaForm);
+                }
+                
+                isCaptcha = !!(hcaptcha || recaptcha || kcaptcha);
+                
+                // Cloudflare detection
+                const titleCheck = iframeDoc.title.includes('Just a moment');
+                const cfElement = iframeDoc.getElementById('cf-challenge-running');
+                const cfWrapper = iframeDoc.querySelector('.cf-browser-verification');
+                
+                console.log('[Captcha Debug] Cloudflare title check:', titleCheck);
+                console.log('[Captcha Debug] cf-challenge-running:', !!cfElement);
+                console.log('[Captcha Debug] cf-browser-verification:', !!cfWrapper);
+                
+                isCloudflare = titleCheck || !!cfElement || !!cfWrapper;
+                
+            } catch (e) {
+                console.warn('[Captcha Debug] CORS Error or Access Denied:', e.message);
+                // If CORS blocks us, check from outside
+                try {
+                    const iframeUrl = iframe.contentWindow.location.href;
+                    if (iframeUrl.includes('challenge') || iframeUrl.includes('captcha')) {
+                        console.warn('[Captcha Debug] URL contains captcha keyword!');
+                        isCaptcha = true;
+                    }
+                } catch (corsError) {
+                    console.warn('[Captcha Debug] Cannot access iframe URL due to CORS');
+                }
+            }
+            
+            if (isCaptcha || isCloudflare) {
+                console.warn('[Captcha] 감지됨! 사용자 조치 필요');
+                const logger = LogBox.getInstance();
+                logger.error('[Captcha] 캡차가 감지되었습니다. 해결 후 "재개" 버튼을 눌러주세요.');
+                await pauseForCaptcha(iframe);
+            } else {
+                console.log('[Captcha Debug] No captcha detected');
+            }
+            
+            resolve();
+        };
+        iframe.addEventListener('load', handler);
+        iframe.src = url;
+    });
+}
+
+// Pause execution until user resolves captcha
+function pauseForCaptcha(iframe) {
+    return new Promise((resumeCallback) => {
+        // Create full-screen overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'toki-captcha-overlay';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 999999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; font-family: Arial, sans-serif;
+        `;
+        
+        overlay.innerHTML = `
+            <h1 style="font-size: 32px; margin-bottom: 20px;">⚠️ 캡차 감지</h1>
+            <p style="font-size: 18px; margin-bottom: 30px;">아래 iframe에서 캡차를 해결해주세요.</p>
+            <div style="width: 80%; height: 60%; background: white; border-radius: 10px; overflow: hidden; margin-bottom: 20px;" id="toki-captcha-frame-container"></div>
+            <button id="toki-resume-btn" style="padding: 15px 40px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                재개하기
+            </button>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // Move iframe to overlay for visibility
+        const container = document.getElementById('toki-captcha-frame-container');
+        if (container && iframe) {
+            // Reset hidden styles from downloader.js
+            iframe.style.position = 'static';
+            iframe.style.top = '0';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            container.appendChild(iframe);
+            
+            // Auto-scroll to captcha field and focus input
+            try {
+                const iframeDoc = iframe.contentWindow.document;
+                const captchaField = iframeDoc.querySelector('fieldset#captcha, fieldset.captcha, .captcha_box');
+                if (captchaField) {
+                    captchaField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                // Auto-focus on captcha input
+                const captchaInput = iframeDoc.querySelector('#captcha_key, input.captcha_box');
+                if (captchaInput) {
+                    setTimeout(() => captchaInput.focus(), 300);
+                }
+            } catch (e) {
+                console.warn('[Captcha] Auto-scroll/focus failed:', e.message);
+            }
+        }
+        
+        // Periodic check for captcha resolution (auto-resume)
+        const checkInterval = setInterval(() => {
+            try {
+                const iframeDoc = iframe.contentWindow.document;
+                
+                // Check if captcha fields still exist
+                const captchaFieldset = iframeDoc.querySelector('fieldset#captcha, fieldset.captcha');
+                const captchaImg = iframeDoc.querySelector('img.captcha_img, img[src*="kcaptcha_image.php"]');
+                const captchaForm = iframeDoc.querySelector('form[action*="captcha_check.php"]');
+                
+                const hcaptcha = iframeDoc.querySelector('iframe[src*="hcaptcha"]');
+                const recaptcha = iframeDoc.querySelector('.g-recaptcha');
+                const cloudflare = iframeDoc.querySelector('.cf-browser-verification');
+                
+                const hasCaptcha = !!(captchaFieldset || captchaImg || captchaForm || hcaptcha || recaptcha || cloudflare);
+                
+                if (!hasCaptcha) {
+                    console.log('[Captcha] 자동 감지: 캡차 해결됨!');
+                    clearInterval(checkInterval);
+                    restoreIframeAndResume();
+                }
+            } catch (e) {
+                // CORS error or iframe changed - likely resolved
+                console.log('[Captcha] 자동 감지: iframe 변경 감지 (해결됨으로 추정)');
+                clearInterval(checkInterval);
+                restoreIframeAndResume();
+            }
+        }, 1000); // Check every 1 second
+        
+        // Helper function to restore iframe and resume
+        function restoreIframeAndResume() {
+            // Move iframe back to body BEFORE removing overlay
+            if (iframe && iframe.parentNode) {
+                document.body.appendChild(iframe);
+                iframe.style.position = 'fixed';
+                iframe.style.top = '-9999px';
+                iframe.style.display = 'none';
+            }
+            overlay.remove();
+            resumeCallback();
+        }
+        
+        // Resume button (manual override)
+        document.getElementById('toki-resume-btn').onclick = () => {
+            clearInterval(checkInterval);
+            restoreIframeAndResume();
+        };
+    });
+}
+
+
+// data: JSZip object OR Blob OR Promise<Blob>
+export async function saveFile(data, filename, type = 'local', extension = 'zip', metadata = {}) {
+    const fullFileName = `${filename}.${extension}`;
+    
+    let content;
+    if (data.generateAsync) {
+        content = await data.generateAsync({ type: "blob" });
+    } else {
+        content = await data; // Unbox promise or use blob directly
+    }
+
+    if (type === 'local') {
+        console.log(`[Local] 다운로드 중... (${fullFileName})`);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(content);
+        link.download = fullFileName;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        link.remove();
+        console.log(`[Local] 완료`);
+    } else if (type === 'drive') {
+        const logger = LogBox.getInstance();
+        logger.log(`[Drive] 구글 드라이브 업로드 준비 중... (${fullFileName})`);
+        
+        try {
+            // Call separate GAS module
+            // metadata.folderName: Series Title (if provided), otherwise fallback to filename
+            const targetFolder = metadata.folderName || filename;
+            await uploadToGAS(content, targetFolder, fullFileName, metadata);
+            
+            logger.success(`[Drive] 업로드 완료: ${fullFileName}`);
+            // alert(`구글 드라이브 업로드 완료!\n${fullFileName}`); // Removed to prevent spam
+        } catch (e) {
+            console.error(e);
+            logger.error(`[Drive] 업로드 실패: ${e.message}`);
+            // Optional: Notify on error only if it's critical, but for individual files, log is better.
+        }
+    }
+}

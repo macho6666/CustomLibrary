@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TokiSync Viewer</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css?v=1.0.0" />
+    <!-- Core Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/bridge.js"></script>
+    <script src="js/api_client.js"></script>
+    <script src="js/ui_components.js"></script>
+    <script src="js/main.js"></script>
+  </head>
+  <body>
+    <!-- App Container -->
+    <div class="app-container">
+      <header>
+        <div class="header-top">
+          <h1 onclick="location.reload()">TokiSync ⚡️</h1>
+          <div class="controls">
+            <input
+              type="text"
+              id="search"
+              class="search-box"
+              placeholder="작품 검색..."
+              onkeyup="filterData()"
+            />
+            <button
+              class="btn-icon btn-refresh"
+              id="refreshBtn"
+              onclick="refreshDB(null, false, true)"
+              title="새로고침 (캐시 재구축)"
+            >
+              ↻
+            </button>
+            <button
+              class="btn-icon"
+              onclick="toggleSettings()"
+              title="사이트 설정"
+            >
+              ⚙️
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchTab('all')">
+            전체
+          </button>
+          <button class="tab-btn" onclick="switchTab('Webtoon')">웹툰</button>
+          <button class="tab-btn" onclick="switchTab('Manga')">만화</button>
+          <button class="tab-btn" onclick="switchTab('Novel')">소설</button>
+        </div>
+
+        <!-- Settings Panel -->
+        <div
+          id="domainPanel"
+          style="
+            display: none;
+            background: #252525;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            color: #ddd;
+          "
+        >
+          <!-- 1. Shortcuts (Numbers Only) -->
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-size: 14px;
+              border-bottom: 1px solid #444;
+              padding-bottom: 5px;
+            "
+          >
+            🔗 바로가기 도메인 (번호)
+          </h3>
+          <div
+            class="config-grid"
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              gap: 10px;
+              margin-bottom: 15px;
+            "
+          >
+            <div>
+              <label style="font-size: 11px; color: #aaa">마나토끼</label>
+              <input
+                type="text"
+                id="url_manatoki"
+                class="config-input"
+                placeholder="469"
+                style="text-align: center"
+              />
+            </div>
+            <div>
+              <label style="font-size: 11px; color: #aaa">뉴토끼</label>
+              <input
+                type="text"
+                id="url_newtoki"
+                class="config-input"
+                placeholder="469"
+                style="text-align: center"
+              />
+            </div>
+            <div>
+              <label style="font-size: 11px; color: #aaa">북토끼</label>
+              <input
+                type="text"
+                id="url_booktoki"
+                class="config-input"
+                placeholder="469"
+                style="text-align: center"
+              />
+            </div>
+          </div>
+
+          <!-- 2. Connection Settings -->
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-size: 14px;
+              border-bottom: 1px solid #444;
+              padding-bottom: 5px;
+            "
+          >
+            ☁️ 서버 연결 설정
+          </h3>
+          <div class="config-group" style="margin-bottom: 15px">
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 3px;
+              "
+              >Folder ID</label
+            >
+            <input
+              type="text"
+              id="setting_folderId"
+              class="config-input"
+              placeholder="Google Drive Folder ID"
+            />
+          </div>
+          <div class="config-group" style="margin-bottom: 15px">
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 3px;
+              "
+              >GAS Deployment ID</label
+            >
+            <input
+              type="text"
+              id="setting_deployId"
+              class="config-input"
+              placeholder="AKfycb..."
+            />
+          </div>
+          <div class="config-group" style="margin-bottom: 15px">
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 3px;
+              "
+              >API Key (보안)</label
+            >
+            <input
+              type="password"
+              id="setting_apiKey"
+              class="config-input"
+              placeholder="API Key"
+            />
+            <small
+              style="
+                color: #555;
+                font-size: 10px;
+                display: block;
+                margin-top: 3px;
+              "
+            >
+              UserScript 사용 시 자동 설정
+            </small>
+          </div>
+
+          <!-- 3. Viewer Defaults -->
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-size: 14px;
+              border-bottom: 1px solid #444;
+              padding-bottom: 5px;
+            "
+          >
+            👁️ 뷰어 기본 설정
+          </h3>
+          <div
+            class="config-check-group"
+            style="display: flex; gap: 15px; margin-bottom: 15px"
+          >
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                font-size: 12px;
+              "
+            >
+              <input type="checkbox" id="pref_2page" /> 2쪽 보기
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                font-size: 12px;
+              "
+            >
+              <input type="checkbox" id="pref_cover" /> 표지 우선
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                font-size: 12px;
+              "
+            >
+              <input type="checkbox" id="pref_rtl" /> 일본만화(우좌)
+            </label>
+          </div>
+
+          <div
+            class="config-group"
+            style="
+              margin-bottom: 15px;
+              border-top: 1px solid #333;
+              padding-top: 10px;
+              display: none;
+            "
+          >
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 5px;
+              "
+              >소설 뷰어 엔진</label
+            >
+            <div style="display: flex; gap: 15px; color: #ccc; font-size: 13px">
+              <label style="cursor: pointer"
+                ><input type="radio" name="view_engine" value="foliate" />
+                Foliate (권장)</label
+              >
+              <label style="cursor: pointer"
+                ><input
+                  type="radio"
+                  name="view_engine"
+                  value="legacy"
+                  checked
+                />
+                Legacy (텍스트)</label
+              >
+            </div>
+          </div>
+
+          <div class="config-group" style="text-align: right">
+            <button class="btn btn-save" onclick="saveActiveSettings()">
+              전체 저장
+            </button>
+          </div>
+          <div
+            id="viewerVersionDisplay"
+            style="
+              margin-top: 10px;
+              font-size: 11px;
+              color: #555;
+              text-align: center;
+            "
+          >
+            Version: Loading...
+          </div>
+        </div>
+      </header>
+
+      <!-- Grid -->
+      <div class="grid-container" id="grid">
+        <!-- Cards injected by main.js -->
+      </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- 1. Config Modal (First Run) -->
+    <div id="configModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">⚙️ 서버 연결 설정</div>
+        </div>
+        <div class="modal-body" style="text-align: center">
+          <p style="color: #aaa; font-size: 14px; margin-bottom: 20px">
+            Google Apps Script 배포 URL과 폴더 ID를 입력하세요.<br />
+            (PC에서 Tampermonkey 스크립트 실행 시 자동 설정됩니다.)
+          </p>
+          <div class="config-group">
+            <label class="config-label">GAS 웹 앱 URL</label>
+            <input
+              type="text"
+              id="configApiUrl"
+              class="config-input"
+              placeholder="https://script.google.com/macros/s/.../exec"
+            />
+          </div>
+          <div class="config-group">
+            <label class="config-label">루트 폴더 ID</label>
+            <input
+              type="text"
+              id="configFolderId"
+              class="config-input"
+              placeholder="Google Drive Folder ID"
+            />
+          </div>
+          <div class="config-group">
+            <label class="config-label">API Key (보안)</label>
+            <input
+              type="password"
+              id="configApiKey"
+              class="config-input"
+              placeholder="API Key (선택사항)"
+            />
+            <small
+              style="
+                color: #777;
+                font-size: 11px;
+                display: block;
+                margin-top: 5px;
+              "
+            >
+              UserScript 사용 시 자동으로 주입됩니다.
+            </small>
+          </div>
+          <button class="btn btn-save" onclick="saveManualConfig()">
+            설정 저장
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Episode Modal -->
+    <div id="episodeModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">📄 회차 목록</div>
+          <button class="modal-close" onclick="closeEpisodeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div id="episodeList" class="episode-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Viewer Overlay -->
+    <!-- 3. Viewer Overlay -->
+    <!-- 3. Viewer Overlay -->
+    <div id="viewerOverlay" class="viewer-overlay">
+      <!-- Layer 1: Content (Images & Scroll) -->
+      <div
+        class="viewer-content"
+        id="viewerContent"
+        onclick="handleViewerClick(event)"
+      >
+        <div class="nav-zone nav-prev"></div>
+        <div class="nav-zone nav-next"></div>
+        <div id="viewerImageContainer" class="viewer-image-container"></div>
+        <!-- Scroll Container will be injected here or reused -->
+        <div
+          id="viewerScrollContainer"
+          class="viewer-scroll-container"
+          style="display: none"
+        ></div>
+
+        <!-- Page Counter (Floating) -->
+        <div id="pageCounter" class="page-counter">- / -</div>
+      </div>
+
+      <!-- Layer 2: Controls (Header & Footer) -->
+      <div id="viewerControls" class="viewer-controls">
+        <!-- Top Header -->
+        <div class="viewer-header">
+          <span class="viewer-title" id="viewerTitle">TokiViewer</span>
+          <button class="btn-icon close-btn" onclick="closeViewer()">×</button>
+        </div>
+
+        <!-- Cloud/Bottom Footer -->
+        <div class="viewer-footer">
+          <!-- Row 1: Navigation & Slider -->
+          <div class="footer-row main-row">
+            <button
+              class="btn-icon"
+              onclick="openEpisodeListFromViewer()"
+              title="목차"
+            >
+              📑
+            </button>
+
+            <div class="slider-container">
+              <span id="sliderCurrent" class="slider-label">1</span>
+              <input
+                type="range"
+                id="pageSlider"
+                min="1"
+                max="100"
+                value="1"
+                step="1"
+                oninput="onSliderInput(this.value)"
+                onchange="onSliderChange(this.value)"
+              />
+              <span id="sliderTotal" class="slider-label">100</span>
+            </div>
+
+            <div class="nav-buttons">
+              <button class="btn-icon" onclick="navigateViewer(-1)">◀</button>
+              <button class="btn-icon" onclick="navigateViewer(1)">▶</button>
+            </div>
+          </div>
+
+          <!-- Row 2: Settings Toggles -->
+          <div class="footer-row settings-row">
+            <!-- Image Mode Settings -->
+            <button
+              id="btnTwoPage"
+              class="btn-toggle image-only"
+              onclick="toggleViewMode()"
+            >
+              2쪽 보기
+            </button>
+            <button
+              id="btnCover"
+              class="btn-toggle image-only"
+              onclick="toggleCoverMode()"
+            >
+              표지 먼저
+            </button>
+            <button
+              id="btnScroll"
+              class="btn-toggle"
+              onclick="toggleScrollMode()"
+            >
+              스크롤 보기
+            </button>
+            <button
+              id="btnRtl"
+              class="btn-toggle image-only"
+              onclick="toggleRtlMode()"
+            >
+              일본어(우좌)
+            </button>
+
+            <!-- EPUB Mode Settings -->
+            <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">
+              글자 -
+            </button>
+            <button class="btn-toggle epub-only" onclick="changeFontSize(2)">
+              글자 +
+            </button>
+
+            <div class="divider"></div>
+            <button
+              id="btnPreload"
+              class="btn-toggle"
+              onclick="togglePreloadMode()"
+            >
+              미리 등
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="pageLoader" class="loader-overlay">
+      <div class="spinner"></div>
+      <div style="color: #888">데이터 불러오는 중...</div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/include.js?v=3.3.4"></script>
+  </body>
+</html>
