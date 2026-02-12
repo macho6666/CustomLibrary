@@ -63,17 +63,15 @@ class TokiApiClient {
 
         // 기본 Payload 구성
         // payload를 맨 뒤에 spread하여 edit 요청 시 folderId를 덮어쓸 수 있게 함
-        const bodyData = {
-            type: type,
-            folderId: this._config.folderId,
-            apiKey: this._config.apiKey,
-            protocolVersion: 3,
-            ...payload
-        };
-
-        // type과 apiKey는 항상 보장 (payload에서 덮어쓰면 안 됨)
-        bodyData.type = type;
-        bodyData.apiKey = this._config.apiKey;
+const bodyData = {
+    type: type,
+    folderId: this._config.folderId,
+    apiKey: this._config.apiKey,
+    protocolVersion: 3,
+    ...payload            // payload가 맨 뒤! folderId 덮어쓸 수 있게
+};
+bodyData.type = type;
+bodyData.apiKey = this._config.apiKey;
 
         try {
             const response = await fetch(this._config.baseUrl, {
