@@ -1119,3 +1119,8 @@ foliate-view {
 .btn-edit:hover {
   background: #ffb74d;
 }
+/* 카드 오버레이 버튼 통일 */
+.btn-list {
+  background: #444;
+  color: white;
+}
