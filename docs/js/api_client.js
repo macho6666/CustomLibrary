@@ -62,16 +62,13 @@ class TokiApiClient {
         if (!this._config.baseUrl) throw new Error("API URL이 설정되지 않았습니다.");
 
         // 기본 Payload 구성
-        // payload를 맨 뒤에 spread하여 edit 요청 시 folderId를 덮어쓸 수 있게 함
-const bodyData = {
-    type: type,
-    folderId: this._config.folderId,
-    apiKey: this._config.apiKey,
-    protocolVersion: 3,
-    ...payload            // payload가 맨 뒤! folderId 덮어쓸 수 있게
-};
-bodyData.type = type;
-bodyData.apiKey = this._config.apiKey;
+        const bodyData = {
+            ...payload,
+            type: type,
+            folderId: this._config.folderId,
+            apiKey: this._config.apiKey,
+            protocolVersion: 3
+        };
 
         try {
             const response = await fetch(this._config.baseUrl, {
