@@ -947,3 +947,175 @@ foliate-view {
 .right-tap {
   right: 0;
 }
+/* =========================================
+   Edit Modal Styles
+   ========================================= */
+
+.edit-modal {
+  max-width: 550px;
+  max-height: 90vh;
+}
+
+.edit-modal .modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* 커버 섹션 */
+.edit-cover-section {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.edit-cover-preview {
+  width: 100px;
+  height: 140px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #2a2a2a;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.edit-cover-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.edit-cover-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 11px;
+}
+
+.edit-cover-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-upload {
+  background: #444;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  transition: background 0.2s;
+  width: auto;
+  box-shadow: none;
+}
+
+.btn-upload:hover {
+  background: #555;
+}
+
+.edit-cover-filename {
+  font-size: 11px;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+/* 편집 폼 */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-field label {
+  font-size: 12px;
+  color: #999;
+  font-weight: bold;
+}
+
+.edit-field input,
+.edit-field select {
+  background: #333;
+  border: 1px solid #555;
+  color: white;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.edit-field input:focus,
+.edit-field select:focus {
+  border-color: var(--accent);
+}
+
+.edit-field select {
+  cursor: pointer;
+}
+
+.edit-field select option {
+  background: #333;
+  color: white;
+}
+
+/* 버튼 */
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.edit-btn-cancel {
+  background: #444;
+  color: #ccc;
+  padding: 10px 20px;
+  width: auto;
+  box-shadow: none;
+}
+
+.edit-btn-cancel:hover {
+  background: #555;
+}
+
+.edit-btn-save {
+  background: var(--accent);
+  color: black;
+  padding: 10px 24px;
+  font-weight: bold;
+  width: auto;
+  box-shadow: none;
+}
+
+.edit-btn-save:hover {
+  background: #00e892;
+}
+
+.edit-btn-save:disabled {
+  background: #555;
+  color: #888;
+  cursor: not-allowed;
+}
+
+/* 카드 편집 버튼 */
+.btn-edit {
+  background: #ff9800;
+  color: black;
+}
+
+.btn-edit:hover {
+  background: #ffb74d;
+}
