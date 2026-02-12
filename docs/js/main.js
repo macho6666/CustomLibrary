@@ -185,7 +185,7 @@ function renderGrid(seriesList) {
                          onload="this.dataset.loaded='true'">
                     <div class="overlay">
                         <a href="${series.id ? 'https://drive.google.com/drive/u/0/folders/' + series.id : '#'}" target="_blank" class="btn btn-drive">📂 드라이브</a>
-                        <button onclick="openEpisodeList('${series.id}', '${series.name}', ${index})" class="btn" style="background:#444; color:white;">📄 목록</button>
+                        <button onclick="openEpisodeList('${series.id}', '${series.name}', ${index})" class="btn btn-list">📄 목록</button>
                         ${hasContentId ? `
                             <a href="${dynamicUrl}" target="_blank" class="btn btn-site">🌐 사이트</a>
                         ` : ''}
