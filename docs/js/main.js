@@ -483,3 +483,184 @@ window.saveManualConfig = saveManualConfig;
 window.showToast = showToast;
 window.renderGrid = renderGrid;
 window.handleThumbnailError = handleThumbnailError;
+
+// ============================================================
+// 6. Edit Info Modal
+// ============================================================
+
+let editingSeriesIndex = -1;
+let editingSeriesId = '';
+let editCoverFile = null;
+
+/**
+ * 편집 모달 열기
+ */
+function openEditModal(index) {
+    const series = allSeries[index];
+    if (!series) return;
+
+    editingSeriesIndex = index;
+    editingSeriesId = series.id;
+    editCoverFile = null;
+
+    const meta = series.metadata || {};
+
+    // 폼 채우기
+    document.getElementById('editTitle').value = series.name || '';
+    document.getElementById('editSourceId').value = series.sourceId || '';
+    document.getElementById('editAuthor').value = (meta.authors || []).join(', ');
+    document.getElementById('editStatus').value = meta.status || 'Unknown';
+    document.getElementById('editPublisher').value = meta.publisher || '';
+    document.getElementById('editCategory').value = series.category || meta.category || 'Manga';
+    document.getElementById('editUrl').value = series.sourceUrl || '';
+
+    // 커버 미리보기
+    const preview = document.getElementById('editCoverPreview');
+    const noImage = document.getElementById('editCoverNoImage');
+    const filenameEl = document.getElementById('editCoverFilename');
+    filenameEl.textContent = '';
+
+    if (series.thumbnailId) {
+        preview.src = `https://lh3.googleusercontent.com/d/${series.thumbnailId}=s400`;
+        preview.style.display = 'block';
+        noImage.style.display = 'none';
+    } else {
+        preview.style.display = 'none';
+        noImage.style.display = 'flex';
+    }
+
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+/**
+ * 편집 모달 닫기
+ */
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+    editingSeriesIndex = -1;
+    editingSeriesId = '';
+    editCoverFile = null;
+}
+
+/**
+ * 커버 파일 선택 처리
+ */
+function handleCoverSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    editCoverFile = file;
+    document.getElementById('editCoverFilename').textContent = file.name;
+
+    // 미리보기
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('editCoverPreview');
+        const noImage = document.getElementById('editCoverNoImage');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        noImage.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * 편집 내용 저장
+ */
+async function saveEditInfo() {
+    if (!editingSeriesId) return;
+
+    const saveBtn = document.querySelector('.edit-btn-save');
+    saveBtn.textContent = '⏳ 저장 중...';
+    saveBtn.disabled = true;
+
+    try {
+        // 1. info.json 데이터 구성
+        const authorsRaw = document.getElementById('editAuthor').value.trim();
+        const authors = authorsRaw ? authorsRaw.split(',').map(a => a.trim()).filter(a => a) : [];
+
+        const infoData = {
+            id: document.getElementById('editSourceId').value.trim(),
+            title: document.getElementById('editTitle').value.trim(),
+            metadata: {
+                authors: authors.length > 0 ? authors : ['Unknown'],
+                status: document.getElementById('editStatus').value,
+                category: document.getElementById('editCategory').value,
+                publisher: document.getElementById('editPublisher').value
+            },
+            url: document.getElementById('editUrl').value.trim(),
+            author: authors.length > 0 ? authors[0] : 'Unknown',
+            last_episode: 0,
+            file_count: 0,
+            last_updated: new Date().toISOString()
+        };
+
+        // 2. info.json 저장 요청
+        const saveResult = await API.request('edit_save_info', {
+            folderId: editingSeriesId,
+            infoData: infoData
+        });
+        console.log("📝 info.json saved:", saveResult);
+
+        // 3. 커버 업로드 (선택한 경우)
+        if (editCoverFile) {
+            const base64 = await fileToBase64(editCoverFile);
+            const coverResult = await API.request('edit_upload_cover', {
+                folderId: editingSeriesId,
+                fileName: 'cover.jpg',
+                base64Data: base64,
+                mimeType: editCoverFile.type
+            });
+            console.log("🖼 cover uploaded:", coverResult);
+        }
+
+        // 4. 로컬 데이터 업데이트 (새로고침 없이 반영)
+        if (editingSeriesIndex >= 0 && allSeries[editingSeriesIndex]) {
+            const series = allSeries[editingSeriesIndex];
+            series.name = infoData.title;
+            series.sourceId = infoData.id;
+            series.category = infoData.metadata.category;
+            series.metadata = {
+                ...series.metadata,
+                authors: infoData.metadata.authors,
+                status: infoData.metadata.status,
+                publisher: infoData.metadata.publisher,
+                category: infoData.metadata.category
+            };
+        }
+
+        // 5. 그리드 새로고침
+        renderGrid(allSeries);
+
+        showToast("✅ 작품 정보가 저장되었습니다.");
+        closeEditModal();
+
+    } catch (e) {
+        console.error("Edit Save Error:", e);
+        showToast(`❌ 저장 실패: ${e.message}`, 5000);
+    } finally {
+        saveBtn.textContent = '💾 저장';
+        saveBtn.disabled = false;
+    }
+}
+
+/**
+ * 파일을 Base64로 변환
+ */
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Expose Globals
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.handleCoverSelect = handleCoverSelect;
+window.saveEditInfo = saveEditInfo;
