@@ -241,9 +241,10 @@ function renderGrid(seriesList) {
             const card = document.createElement('div');
             card.className = 'card';
 
-            const meta = series.metadata || { status: 'Unknown', authors: [] };
+            const meta = series.metadata || {};
             const authors = meta.authors || [];
-            const status = meta.status || 'Unknown';
+            const status = meta.status || '';
+            const publisher = meta.publisher || '';
             
             // Thumbnail Logic: Base64 -> DriveID -> Default
             let thumb = NO_IMAGE_SVG;
@@ -257,6 +258,15 @@ function renderGrid(seriesList) {
             }
             const dynamicUrl = getDynamicLink(series);
             const hasContentId = !!series.sourceId;
+
+            // 연재상태 뱃지 처리
+            let statusClass = 'ongoing';
+            let statusText = status;
+            if (!status || status === 'Unknown') {
+                statusText = '';
+            } else if (status === 'COMPLETED' || status === '완결') {
+                statusClass = 'completed';
+            }
 
             card.innerHTML = `
                 <div class="thumb-wrapper">
@@ -278,8 +288,8 @@ function renderGrid(seriesList) {
                     <div class="title" title="${series.name}">${series.name}</div>
                     <span class="author" title="${authors.join(', ')}">${authors.join(', ') || '작가 미상'}</span>
                     <div class="meta">
-                        <span class="badge ${status === 'COMPLETED' ? 'completed' : 'ongoing'}">${status}</span>
-                        <span class="count">${series.booksCount || 0}권</span>
+                        ${statusText ? `<span class="badge ${statusClass}">${statusText}</span>` : ''}
+                        ${publisher ? `<span class="publisher">${publisher}</span>` : ''}
                     </div>
                 </div>
             `;
@@ -340,8 +350,6 @@ function saveManualConfig() {
 // 🚀 Global State
 let currentTab = 'all'; // 'all', 'Webtoon', 'Manga', 'Novel'
 
-// ... (Existing Init Code) ...
-
 /**
  * 탭을 전환하고 리스트를 필터링합니다.
  * @param {string} tabName - 'all', 'Webtoon', 'Manga', 'Novel'
@@ -385,10 +393,9 @@ function filterData() {
         const matchText = text.includes(query);
         
         // 2. Category Filter
-        // Note: Server returns 'category' in metadata or root object
         const cat = series.category || (series.metadata ? series.metadata.category : 'Unknown');
         const matchTab = (currentTab === 'all') || (cat === currentTab) || 
-                         (currentTab === 'Webtoon' && cat === 'Webtoon') || // Legacy Compat
+                         (currentTab === 'Webtoon' && cat === 'Webtoon') ||
                          (currentTab === 'Manga' && cat === 'Manga');
 
         card.style.display = (matchText && matchTab) ? 'flex' : 'none';
@@ -410,11 +417,11 @@ function saveActiveSettings() {
     // 2. Save Connection Settings
     const folderId = document.getElementById('setting_folderId').value.trim();
     const deployId = document.getElementById('setting_deployId').value.trim();
-    const apiKey = document.getElementById('setting_apiKey').value.trim();  // ✅ API Key 추가
+    const apiKey = document.getElementById('setting_apiKey').value.trim();
     
     if (folderId && deployId) {
         const apiUrl = `https://script.google.com/macros/s/${deployId}/exec`;
-        API.setConfig(apiUrl, folderId, apiKey);  // ✅ API Key 포함
+        API.setConfig(apiUrl, folderId, apiKey);
         showToast("☁️ 서버 연결 설정이 업데이트되었습니다.");
     }
 
@@ -452,29 +459,27 @@ function loadDomains() {
     // 2. Load Connection Settings
     const elFolder = document.getElementById('setting_folderId');
     const elDeploy = document.getElementById('setting_deployId');
-    const elApiKey = document.getElementById('setting_apiKey');  // ✅ API Key 추가
+    const elApiKey = document.getElementById('setting_apiKey');
     
     if (API._config.folderId && elFolder) elFolder.value = API._config.folderId;
     if (API._config.baseUrl && elDeploy) {
-        // Extract Deployment ID from URL
         const match = API._config.baseUrl.match(/\/s\/([^\/]+)\/exec/);
         if (match && match[1]) elDeploy.value = match[1];
     }
     if (API._config.apiKey && elApiKey) {
-        elApiKey.value = API._config.apiKey;  // ✅ API Key 로드
+        elApiKey.value = API._config.apiKey;
     }
 
     // 3. Load Viewer Preferences
     const vMode = localStorage.getItem('toki_v_mode') || '1page';
     const vCover = (localStorage.getItem('toki_v_cover') === 'true');
     const vRtl = (localStorage.getItem('toki_v_rtl') === 'true');
-    const vEngine = localStorage.getItem('toki_v_engine') || 'legacy'; // Default to Legacy (Rollback)
+    const vEngine = localStorage.getItem('toki_v_engine') || 'legacy';
 
     if(document.getElementById('pref_2page')) document.getElementById('pref_2page').checked = (vMode === '2page');
     if(document.getElementById('pref_cover')) document.getElementById('pref_cover').checked = vCover;
     if(document.getElementById('pref_rtl')) document.getElementById('pref_rtl').checked = vRtl;
     
-    // Set Radio
     const radios = document.getElementsByName('view_engine');
     for(const r of radios) {
         r.checked = (r.value === vEngine);
@@ -483,11 +488,9 @@ function loadDomains() {
 
 function getDynamicLink(series) {
     const contentId = series.sourceId;
-    // Defensive Category Check
     let cat = series.category || (series.metadata ? series.metadata.category : '');
     const site = (series.name || "").toLowerCase();
 
-    // Fallback if category is missing
     if (!cat) {
         if (site.includes("북토끼")) cat = "Novel";
         else if (site.includes("마나토끼")) cat = "Manga";
@@ -496,7 +499,6 @@ function getDynamicLink(series) {
 
     const saved = JSON.parse(localStorage.getItem('toki_domains')) || DEFAULT_DOMAINS;
     
-    // Default: Webtoon (NewToki)
     let baseUrl = `https://newtoki${saved.newtoki}.com`;
     let path = "/webtoon/";
 
@@ -528,29 +530,10 @@ async function loadNextThumbnail() {
     // Bridge (Proxy) Check
     if (window.tokiBridge && window.tokiBridge.isConnected && window.tokiBridge.fetch && url.includes('googleusercontent.com')) {
         try {
-            // Extract File ID from CDN URL
-            // https://lh3.googleusercontent.com/d/FILE_ID=s400
             const fileIdMatch = url.match(/\/d\/([^=]+)/);
             if (fileIdMatch) {
                 const fileId = fileIdMatch[1];
                 const directUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
-                
-                // Fetch via Proxy
-                // Note: We need a valid OAuth token for this API!
-                // But wait... UserScript GM_xmlhttpRequest might handle it if we pass token?
-                // Actually, if we use API Key only, getting media might be restricted for some files.
-                // However, LH3 URLs are public-ish or authenticated via cookies.
-                // For Direct Drive API, we need OAuth Token.
-                
-                // Strategy:
-                // 1. If we have Token (from view_get_token via Bridge?), use it.
-                // 2. Or just try fetching the CDN URL via GM_xmlhttpRequest (bypasses CORS)
-                //    CDN URL usually works without Auth if the file allows "Anyone with link" or current session cookies.
-                //    BUT, UserScript runs in different context.
-                
-                // Correction: The `url` here is the LH3 CDN URL.
-                // Let's try fetching THAT url via Bridge first. It's fastest and simplest.
-                // This bypasses CORS issues on the Viewer page.
                 
                 const response = await window.tokiBridge.fetch(url, {
                     method: 'GET',
@@ -558,23 +541,21 @@ async function loadNextThumbnail() {
                 });
                 
                 if (response) {
-                    // Convert ArrayBuffer back to Blob
                     const blob = new Blob([response]);
                     const blobUrl = URL.createObjectURL(blob);
-                    activeBlobUrls.push(blobUrl); // Track for cleanup
+                    activeBlobUrls.push(blobUrl);
                     img.src = blobUrl;
                     
-                    // Cleanup handlers
                     img.onload = () => {
                         img.dataset.loaded = 'true';
                         isLoadingThumbnail = false;
-                        setTimeout(loadNextThumbnail, 50); // Faster queue for Bridge (50ms)
+                        setTimeout(loadNextThumbnail, 50);
                     };
                     img.onerror = () => {
                         isLoadingThumbnail = false;
                         setTimeout(loadNextThumbnail, THUMBNAIL_DELAY_MS);
                     };
-                    return; // Done with Bridge path
+                    return;
                 }
             }
         } catch (e) {
@@ -604,7 +585,7 @@ async function loadNextThumbnail() {
  */
 function queueThumbnail(img, url) {
     thumbnailQueue.push({ img, url });
-    loadNextThumbnail(); // Start processing if not already running
+    loadNextThumbnail();
 }
 
 /**
@@ -613,13 +594,11 @@ function queueThumbnail(img, url) {
  * @param {string} fallbackSvg - 폴백 SVG
  */
 function handleThumbnailError(img, fallbackSvg) {
-    // 이미 재시도했거나 폴백 이미지면 더 이상 재시도 안 함
     if (img.dataset.retried || img.src === fallbackSvg || img.src.startsWith('data:image/svg')) {
         img.src = fallbackSvg;
         return;
     }
     
-    // 처음 실패한 경우: 재시도 (1초 후)
     img.dataset.retried = 'true';
     const originalThumb = img.dataset.thumb;
     
@@ -648,6 +627,6 @@ window.switchTab = switchTab;
 window.filterData = filterData;
 window.saveActiveSettings = saveActiveSettings;
 window.saveManualConfig = saveManualConfig;
-window.showToast = showToast; // Used by viewer?
-window.renderGrid = renderGrid; // Debugging
-window.handleThumbnailError = handleThumbnailError; // ✅ Error handler
+window.showToast = showToast;
+window.renderGrid = renderGrid;
+window.handleThumbnailError = handleThumbnailError;
