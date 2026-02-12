@@ -9,14 +9,11 @@ class TokiApiClient {
      * 초기화: 메모리 기반 설정 (UserScript 우선, localStorage 폴백)
      */
     constructor() {
-        // In-memory storage (우선순위 1: UserScript에서 주입)
         this._config = {
             baseUrl: '',
             folderId: '',
             apiKey: ''
         };
-        
-        // Fallback: localStorage (단독 실행 시)
         this._loadFromLocalStorage();
     }
 
@@ -41,7 +38,6 @@ class TokiApiClient {
         this._config.folderId = id;
         this._config.apiKey = apiKey;
         
-        // localStorage에도 저장 (다음 번 단독 실행 시 사용)
         localStorage.setItem('TOKI_API_URL', url);
         localStorage.setItem('TOKI_ROOT_ID', id);
         localStorage.setItem('TOKI_API_KEY', apiKey);
@@ -66,18 +62,20 @@ class TokiApiClient {
         if (!this._config.baseUrl) throw new Error("API URL이 설정되지 않았습니다.");
 
         // 기본 Payload 구성
+        // payload를 맨 뒤에 spread하여 edit 요청 시 folderId를 덮어쓸 수 있게 함
         const bodyData = {
-            ...payload,
             type: type,
             folderId: this._config.folderId,
-            apiKey: this._config.apiKey,  // ✅ API Key 포함
-            protocolVersion: 3
+            apiKey: this._config.apiKey,
+            protocolVersion: 3,
+            ...payload
         };
 
+        // type과 apiKey는 항상 보장 (payload에서 덮어쓰면 안 됨)
+        bodyData.type = type;
+        bodyData.apiKey = this._config.apiKey;
+
         try {
-            // [CORS Workaround] GAS는 application/json preflight를 거절하는 경우가 많음.
-            // text/plain으로 보내면 브라우저가 preflight를 생략하고 보냄.
-            // GAS 서버에서는 e.postData.contents로 파싱 가능.
             const response = await fetch(this._config.baseUrl, {
                 method: 'POST',
                 headers: {
@@ -107,5 +105,4 @@ class TokiApiClient {
 
 // 전역 인스턴스
 window.API = new TokiApiClient();
-const API = window.API; // Export for local use if needed, though mostly used via window in other modules now
-
+const API = window.API;
