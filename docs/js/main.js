@@ -189,6 +189,7 @@ function renderGrid(seriesList) {
                         ${hasContentId ? `
                             <a href="${dynamicUrl}" target="_blank" class="btn btn-site">🌐 사이트</a>
                         ` : ''}
+                        <button onclick="event.stopPropagation(); openEditModal(${index})" class="btn btn-edit">✏️ 편집</button>
                     </div>
                 </div>
                 <div class="info">
