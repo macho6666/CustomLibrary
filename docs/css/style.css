@@ -207,10 +207,6 @@ background: rgba(0, 0, 0, 0.4);
 opacity: 1;
 }
 
-/* ✅ 이렇게 넣어야 함 */
-.overlay .btn {
-    box-sizing: border-box !important;
-}
 .btn {
 padding: 6px 12px;
 border-radius: 4px;
