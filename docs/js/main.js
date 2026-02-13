@@ -29,7 +29,6 @@ function clearBlobUrls() {
     activeBlobUrls = [];
 }
 
-
 // ============================================================
 // 1. Initialization & Handshake
 // ============================================================
@@ -71,7 +70,7 @@ function handleMessage(event) {
 }
 
 // ============================================================
-// 2. Data Fetching (Simplified - index always exists)
+// 2. Data Fetching
 // ============================================================
 
 async function refreshDB(forceId = null, silent = false, bypassCache = false) {
@@ -88,7 +87,7 @@ async function refreshDB(forceId = null, silent = false, bypassCache = false) {
     }
 
     try {
-        const payload = { folderId: forceId || API.folderId };
+        const payload = { folderId: forceId || API._config.folderId };
         if (bypassCache) payload.bypassCache = true;
 
         const response = await API.request('view_get_library', payload);
@@ -175,25 +174,32 @@ function renderGrid(seriesList) {
                 statusClass = 'completed';
             }
 
-card.innerHTML = `
-    <div class="thumb-wrapper">
-        <img src="${NO_IMAGE_SVG}" 
-             data-thumb="${thumb}" 
-             class="thumb" 
-             loading="lazy"
-             onerror="handleThumbnailError(this, '${NO_IMAGE_SVG}')"
-             onload="this.dataset.loaded='true'">
-        <div class="overlay">
-            <button onclick="window.open('${series.id ? 'https://drive.google.com/drive/u/0/folders/' + series.id : '#'}', '_blank')" class="btn btn-drive">📂 드라이브</button>
-            <button onclick="openEpisodeList('${series.id}', '${series.name}', ${index})" class="btn btn-list">📄 목록</button>
-            ${hasContentId
-                ? `<button onclick="window.open('${dynamicUrl}', '_blank')" class="btn btn-site">🌐 사이트</button>`
-                : `<button class="btn btn-site btn-disabled" disabled>🌐 사이트</button>`
-            }
-            <button onclick="event.stopPropagation(); openEditModal(${index})" class="btn btn-edit">✏️ 편집</button>
-        </div>
-    </div>
-`;
+            card.innerHTML = `
+                <div class="thumb-wrapper">
+                    <img src="${NO_IMAGE_SVG}" 
+                         data-thumb="${thumb}" 
+                         class="thumb" 
+                         loading="lazy"
+                         onerror="handleThumbnailError(this, '${NO_IMAGE_SVG}')"
+                         onload="this.dataset.loaded='true'">
+                    <div class="overlay">
+                        <a href="${series.id ? 'https://drive.google.com/drive/u/0/folders/' + series.id : '#'}" target="_blank" class="btn btn-drive">📂 드라이브</a>
+                        <button onclick="openEpisodeList('${series.id}', '${series.name}', ${index})" class="btn btn-list">📄 목록</button>
+                        ${hasContentId ? `
+                            <a href="${dynamicUrl}" target="_blank" class="btn btn-site">🌐 사이트</a>
+                        ` : ''}
+                        <button onclick="event.stopPropagation(); openEditModal(${index})" class="btn btn-edit">✏️ 편집</button>
+                    </div>
+                </div>
+                <div class="info">
+                    <div class="title" title="${series.name}">${series.name}</div>
+                    <span class="author" title="${authors.join(', ')}">${authors.join(', ') || '작가 미상'}</span>
+                    <div class="meta">
+                        ${statusText ? `<span class="badge ${statusClass}">${statusText}</span>` : ''}
+                        ${publisher ? `<span class="publisher">${publisher}</span>` : ''}
+                    </div>
+                </div>
+            `;
             
             grid.appendChild(card);
             
@@ -467,17 +473,6 @@ function toggleSettings() {
     el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
-// 🚀 Expose Globals
-window.refreshDB = refreshDB;
-window.toggleSettings = toggleSettings;
-window.switchTab = switchTab;
-window.filterData = filterData;
-window.saveActiveSettings = saveActiveSettings;
-window.saveManualConfig = saveManualConfig;
-window.showToast = showToast;
-window.renderGrid = renderGrid;
-window.handleThumbnailError = handleThumbnailError;
-
 // ============================================================
 // 6. Edit Info Modal
 // ============================================================
@@ -499,7 +494,6 @@ function openEditModal(index) {
 
     const meta = series.metadata || {};
 
-    // 폼 채우기
     document.getElementById('editTitle').value = series.name || '';
     document.getElementById('editSourceId').value = series.sourceId || '';
     document.getElementById('editAuthor').value = (meta.authors || []).join(', ');
@@ -508,7 +502,6 @@ function openEditModal(index) {
     document.getElementById('editCategory').value = series.category || meta.category || 'Manga';
     document.getElementById('editUrl').value = series.sourceUrl || '';
 
-    // 커버 미리보기
     const preview = document.getElementById('editCoverPreview');
     const noImage = document.getElementById('editCoverNoImage');
     const filenameEl = document.getElementById('editCoverFilename');
@@ -546,7 +539,6 @@ function handleCoverSelect(event) {
     editCoverFile = file;
     document.getElementById('editCoverFilename').textContent = file.name;
 
-    // 미리보기
     const reader = new FileReader();
     reader.onload = function(e) {
         const preview = document.getElementById('editCoverPreview');
@@ -561,17 +553,11 @@ function handleCoverSelect(event) {
 /**
  * 편집 내용 저장
  */
-
-
-    
-
-    
 async function saveEditInfo() {
     if (!editingSeriesId) return;
-    
-    // 🔄 저장 안내 팝업
+
     showToast("💾 변경하겠습니다. 잠시만 기다려주세요...", 5000);
-    
+
     const saveBtn = document.querySelector('.edit-btn-save');
     saveBtn.textContent = '⏳ 저장 중...';
     saveBtn.disabled = true;
@@ -615,32 +601,34 @@ async function saveEditInfo() {
             });
             console.log("🖼 cover uploaded:", coverResult);
         }
-// 4. 로컬 데이터 즉시 반영 (UI 빠른 업데이트)
-if (editingSeriesIndex >= 0 && allSeries[editingSeriesIndex]) {
-    const series = allSeries[editingSeriesIndex];
-    series.name = infoData.title;
-    series.sourceId = infoData.id;
-    series.sourceUrl = infoData.url;
-    series.category = infoData.metadata.category;
-    series.metadata = {
-        ...series.metadata,
-        authors: infoData.metadata.authors,
-        status: infoData.metadata.status,
-        publisher: infoData.metadata.publisher,
-        category: infoData.metadata.category
-    };
-}
 
-// 5. 그리드 즉시 반영
-renderGrid(allSeries);
+        // 4. 로컬 데이터 업데이트 (새로고침 없이 반영)
+        if (editingSeriesIndex >= 0 && allSeries[editingSeriesIndex]) {
+            const series = allSeries[editingSeriesIndex];
+            series.name = infoData.title;
+            series.sourceId = infoData.id;
+            series.sourceUrl = infoData.url;
+            series.category = infoData.metadata.category;
+            series.metadata = {
+                ...series.metadata,
+                authors: infoData.metadata.authors,
+                status: infoData.metadata.status,
+                publisher: infoData.metadata.publisher,
+                category: infoData.metadata.category
+            };
+        }
 
-showToast("✅ 작품 정보가 저장되었습니다.");
-closeEditModal();
+        // 5. 그리드 새로고침
+        renderGrid(allSeries);
 
-// 6. 서버 캐시 갱신 (백그라운드) ← 🔑 이게 핵심!
-setTimeout(() => {
-    refreshDB(null, true, true);  // silent=true, bypassCache=true
-}, 1000);
+        showToast("✅ 작품 정보가 저장되었습니다.");
+        closeEditModal();
+
+        // 6. 서버 캐시 갱신 (백그라운드)
+        setTimeout(() => {
+            refreshDB(null, true, true);
+        }, 1000);
+
     } catch (e) {
         console.error("Edit Save Error:", e);
         showToast(`❌ 저장 실패: ${e.message}`, 5000);
@@ -665,7 +653,19 @@ function fileToBase64(file) {
     });
 }
 
-// Expose Globals
+// ============================================================
+// 🚀 Expose Globals
+// ============================================================
+
+window.refreshDB = refreshDB;
+window.toggleSettings = toggleSettings;
+window.switchTab = switchTab;
+window.filterData = filterData;
+window.saveActiveSettings = saveActiveSettings;
+window.saveManualConfig = saveManualConfig;
+window.showToast = showToast;
+window.renderGrid = renderGrid;
+window.handleThumbnailError = handleThumbnailError;
 window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
 window.handleCoverSelect = handleCoverSelect;
