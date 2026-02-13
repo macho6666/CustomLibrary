@@ -718,14 +718,20 @@ function openEpisodeEdit(index) {
     const book = _currentBooks[index];
     if (!book) return;
 
-    const newName = prompt('파일 이름 수정:', book.name);
-    if (newName === null || newName.trim() === '' || newName === book.name) return;
+    const lastDot = book.name.lastIndexOf('.');
+    const nameOnly = lastDot > 0 ? book.name.substring(0, lastDot) : book.name;
+    const ext = lastDot > 0 ? book.name.substring(lastDot) : '';
+
+    const newName = prompt('파일 이름 수정:', nameOnly);
+    if (newName === null || newName.trim() === '' || newName.trim() === nameOnly) return;
+
+    const fullName = newName.trim() + ext;
 
     showToast("✏️ 이름 변경 중...", 3000);
 
     API.request('view_rename_file', {
         fileId: book.id,
-        newName: newName.trim(),
+        newName: fullName,
         seriesId: _currentSeriesId
     }).then(() => {
         showToast('✅ 파일 이름이 변경되었습니다');
@@ -734,7 +740,6 @@ function openEpisodeEdit(index) {
         showToast(`❌ 수정 실패: ${e.message}`, 5000);
     });
 }
-
 // ============================================================
 // 🚀 Expose Globals
 // ============================================================
