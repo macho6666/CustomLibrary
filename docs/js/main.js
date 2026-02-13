@@ -181,9 +181,9 @@ card.innerHTML = `
         <div class="overlay">
             <a href="..." target="_blank" class="btn btn-drive">📂 드라이브</a>
             <button onclick="..." class="btn btn-list">📄 목록</button>
-            ${hasContentId ? `
-                <a href="${dynamicUrl}" target="_blank" class="btn btn-site">🌐 사이트</a>
-            ` : ''}
+${hasContentId ? `
+    <a href="${dynamicUrl}" target="_blank" class="btn btn-site">🌐 사이트</a>
+` : ''}
             <button onclick="..." class="btn btn-edit">✏️ 편집</button>
         </div>
     </div>
