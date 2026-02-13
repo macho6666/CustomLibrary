@@ -1126,6 +1126,6 @@ color: white;
 }
 /*  ✅ 박스크기 조정  */
 a.btn {
-    box-sizing: border-box;
-    display: block;
+    box-sizing: border-box !important;
+    display: block !important;
 }
