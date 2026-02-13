@@ -1129,3 +1129,48 @@ a.btn {
     box-sizing: border-box !important;
     display: block !important;
 }
+/* 플랫폼별 컬러 */
+.publisher[data-platform="네이버"] {
+    background: #00C73C;
+    color: white;
+}
+.publisher[data-platform="카카오"] {
+    background: #FFCD00;
+    color: #3C1E1E;
+}
+.publisher[data-platform="문피아"] {
+    background: #2E3192;
+    color: white;
+}
+.publisher[data-platform="조아라"] {
+    background: #FF6B35;
+    color: white;
+}
+.publisher[data-platform="리디"] {
+    background: #1F8CE6;
+    color: white;
+}
+.publisher[data-platform="노벨피아"] {
+    background: #7B2FF7;
+    color: white;
+}
+.publisher[data-platform="레진코믹스"] {
+    background: #E5006D;
+    color: white;
+}
+.publisher[data-platform="탑툰"] {
+    background: #FF2D55;
+    color: white;
+}
+.publisher[data-platform="봄툰"] {
+    background: #FF85A2;
+    color: white;
+}
+.publisher[data-platform="일본만화"] {
+    background: #E60012;
+    color: white;
+}
+.publisher[data-platform="기타플랫폼"] {
+    background: #555;
+    color: #ccc;
+}
