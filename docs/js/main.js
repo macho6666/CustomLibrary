@@ -177,20 +177,14 @@ function renderGrid(seriesList) {
 
 card.innerHTML = `
     <div class="thumb-wrapper">
-        <img src="${NO_IMAGE_SVG}" 
-             data-thumb="${thumb}" 
-             class="thumb" 
-             loading="lazy"
-             onerror="handleThumbnailError(this, '${NO_IMAGE_SVG}')"
-             onload="this.dataset.loaded='true'">
+        <img ...>
         <div class="overlay">
-            <button onclick="window.open('${series.id ? 'https://drive.google.com/drive/u/0/folders/' + series.id : '#'}', '_blank')" class="btn btn-drive">📂 드라이브</button>
-            <button onclick="openEpisodeList('${series.id}', '${series.name}', ${index})" class="btn btn-list">📄 목록</button>
-            ${hasContentId
-                ? `<button onclick="window.open('${dynamicUrl}', '_blank')" class="btn btn-site">🌐 사이트</button>`
-                : `<button class="btn btn-site btn-disabled" disabled>🌐 사이트</button>`
-            }
-            <button onclick="event.stopPropagation(); openEditModal(${index})" class="btn btn-edit">✏️ 편집</button>
+            <a href="..." target="_blank" class="btn btn-drive">📂 드라이브</a>
+            <button onclick="..." class="btn btn-list">📄 목록</button>
+            ${hasContentId ? `
+                <a href="${dynamicUrl}" target="_blank" class="btn btn-site">🌐 사이트</a>
+            ` : ''}
+            <button onclick="..." class="btn btn-edit">✏️ 편집</button>
         </div>
     </div>
 `;
