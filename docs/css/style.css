@@ -1124,3 +1124,7 @@ foliate-view {
   background: #444;
   color: white;
 }
+
+.overlay .btn {
+    box-sizing: border-box !important;
+}
