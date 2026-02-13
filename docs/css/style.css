@@ -219,14 +219,6 @@ h1 {
   width: 70%;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  
-  box-sizing: border-box;
-  display: block;
-  margin: 0 auto;
-  font-family: inherit;
-  line-height: 1.4;
-  -webkit-appearance: none;
-  appearance: none;
 }
 .btn:hover {
   transform: scale(1.05);
