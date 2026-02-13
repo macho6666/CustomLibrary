@@ -668,3 +668,108 @@ window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
 window.handleCoverSelect = handleCoverSelect;
 window.saveEditInfo = saveEditInfo;
+
+// ============================================================
+// 7. Episode List (목록)
+// ============================================================
+
+async function openEpisodeList(seriesId, title, seriesIndex) {
+    document.getElementById('episodeModal').style.display = 'flex';
+    document.querySelector('#episodeModal .modal-title').innerText = `📄 ${title}`;
+    const listEl = document.getElementById('episodeList');
+    listEl.innerHTML = '<div style="padding:20px; color:#888;">로딩 중...</div>';
+
+    try {
+        let books = await API.request('view_get_books', { seriesId: seriesId });
+
+        // ✅ 캐시가 비어있으면 자동 재생성
+        if (!books || books.length === 0) {
+            listEl.innerHTML = '<div style="padding:20px; color:#ffaa00;">🔄 캐시 재생성 중...</div>';
+            books = await API.request('view_refresh_cache', { seriesId: seriesId });
+        }
+
+        document.querySelector('#episodeModal .modal-title').innerText = `📄 ${title} (${books ? books.length : 0}개)`;
+        renderEpisodeList(books, seriesId, title);
+    } catch (e) {
+        listEl.innerHTML = `<div style="padding:20px; color:red;">오류: ${e.message}</div>`;
+    }
+}
+
+function renderEpisodeList(books, seriesId, title) {
+    const listEl = document.getElementById('episodeList');
+    listEl.innerHTML = '';
+
+    if (!books || books.length === 0) {
+        listEl.innerHTML = `
+            <div style="padding:20px; text-align:center; color:#888;">
+                <div>에피소드가 없습니다</div>
+                <button onclick="refreshEpisodeCache('${seriesId}', '${title || ''}')" 
+                        style="margin-top:10px; padding:8px 16px; background:#ff9800; color:black; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                    🔄 수동 캐시 재생성
+                </button>
+            </div>`;
+        return;
+    }
+
+    books.forEach((book, index) => {
+        const size = book.size ? (book.size / 1024 / 1024).toFixed(1) + ' MB' : '';
+        const item = document.createElement('div');
+        item.className = 'episode-item';
+        item.innerHTML = `
+            <div>
+                <span class="ep-name">${book.name}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="ep-meta">${size}</span>
+                <button onclick="event.stopPropagation(); openEpisodeEdit(${index}, '${seriesId}')" 
+                        class="ep-edit-btn" title="편집">✏️</button>
+            </div>
+        `;
+        item.onclick = () => {
+            if (typeof openViewer === 'function') openViewer(book);
+        };
+        listEl.appendChild(item);
+    });
+
+    window._currentBooks = books;
+    window._currentSeriesId = seriesId;
+    window._currentSeriesTitle = title;
+}
+
+async function refreshEpisodeCache(seriesId, title) {
+    const listEl = document.getElementById('episodeList');
+    listEl.innerHTML = '<div style="padding:20px; color:#ffaa00;">🔄 폴더 스캔 중... 잠시만 기다려주세요</div>';
+
+    try {
+        const books = await API.request('view_refresh_cache', { seriesId: seriesId });
+        document.querySelector('#episodeModal .modal-title').innerText = `📄 ${title} (${books ? books.length : 0}개)`;
+        renderEpisodeList(books, seriesId, title);
+        showToast('✅ 캐시가 재생성되었습니다');
+    } catch (e) {
+        listEl.innerHTML = `<div style="padding:20px; color:red;">오류: ${e.message}</div>`;
+    }
+}
+
+function openEpisodeEdit(index, seriesId) {
+    const book = window._currentBooks[index];
+    if (!book) return;
+
+    const newName = prompt('파일 이름 수정:', book.name);
+    if (newName === null || newName.trim() === '' || newName === book.name) return;
+
+    API.request('view_rename_file', {
+        fileId: book.id,
+        newName: newName.trim(),
+        seriesId: seriesId
+    }).then(() => {
+        showToast('✅ 파일 이름이 변경되었습니다');
+        refreshEpisodeCache(seriesId, window._currentSeriesTitle || '');
+    }).catch(e => {
+        showToast(`❌ 수정 실패: ${e.message}`, 5000);
+    });
+}
+
+window.openEpisodeList = openEpisodeList;
+window.renderEpisodeList = renderEpisodeList;
+window.refreshEpisodeCache = refreshEpisodeCache;
+window.openEpisodeEdit = openEpisodeEdit;
