@@ -196,7 +196,7 @@ function renderGrid(seriesList) {
                     <span class="author" title="${authors.join(', ')}">${authors.join(', ') || '작가 미상'}</span>
                     <div class="meta">
                         ${statusText ? `<span class="badge ${statusClass}">${statusText}</span>` : ''}
-                        ${publisher ? `<span class="publisher">${publisher}</span>` : ''}
+                        ${publisher ? `<span class="publisher" data-platform="${publisher}">${publisher}</span>` : ''}
                     </div>
                 </div>
             `;
