@@ -569,16 +569,14 @@ function handleCoverSelect(event) {
  * 편집 내용 저장
  */
 
+
+    
+
+    
 async function saveEditInfo() {
     if (!editingSeriesId) return;
-    
-    // 🔴 이거 추가!
     console.log('📤 보내는 folderId:', editingSeriesId);
     console.log('📤 series 데이터:', allSeries[editingSeriesIndex]);
-    
-async function saveEditInfo() {
-    if (!editingSeriesId) return;
-
     const saveBtn = document.querySelector('.edit-btn-save');
     saveBtn.textContent = '⏳ 저장 중...';
     saveBtn.disabled = true;
