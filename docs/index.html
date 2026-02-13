@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>⭐My Library⭐</title>
+    <title>My Library</title>
     <link rel="stylesheet" href="css/style.css?v=1.0.0" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/bridge.js"></script>
@@ -24,14 +24,6 @@
               placeholder="작품 검색..."
               onkeyup="filterData()"
             />
-            <button
-              class="btn-icon btn-refresh"
-              id="refreshBtn"
-              onclick="refreshDB(null, false, true)"
-              title="새로고침 (캐시 재구축)"
-            >
-              ↻
-            </button>
           </div>
         </div>
 
@@ -41,6 +33,7 @@
           <button class="tab-btn" onclick="switchTab('Manga')">만화</button>
           <button class="tab-btn" onclick="switchTab('Novel')">소설</button>
           <button class="tab-btn" onclick="toggleSettings()" title="사이트 설정">⚙️</button>
+          <button class="tab-btn btn-refresh" id="refreshBtn" onclick="refreshDB(null, false, true)" title="새로고침 (캐시 재구축)">↻</button>
         </div>
 
         <div
