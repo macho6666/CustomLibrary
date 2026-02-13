@@ -7,8 +7,8 @@ class TokiApiClient {
     constructor() {
         // ⭐ 기본값 하드코딩 (설정 패널에서 변경 가능)
         this.DEFAULTS = {
-            baseUrl: 'https://script.google.com/macros/s/AKfycby4f1aPuq3IBjnV1hKLSyxO7XB5aeXWFXali0LoE9aV5IG9zTUzj5p2s5DcpZHGCTqD/exec',
-            folderId: '1msAgCcaCTdlwF-9xDCT-YvG3ImDXgYCU',
+            baseUrl: '',
+            folderId: '',
             apiKey: ''
         };
 
