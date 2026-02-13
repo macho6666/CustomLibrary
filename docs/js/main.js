@@ -733,3 +733,65 @@ window.openEpisodeList = openEpisodeList;
 window.closeEpisodeModal = closeEpisodeModal;
 window.renderEpisodeList = renderEpisodeList;
 window.refreshEpisodeCache = refreshEpisodeCache;
+
+function renderEpisodeList(books, seriesId, title) {
+    const listEl = document.getElementById('episodeList');
+    listEl.innerHTML = '';
+
+    if (!books || books.length === 0) {
+        listEl.innerHTML = `
+            <div style="padding:20px; text-align:center; color:#888;">
+                <div>에피소드가 없습니다</div>
+                <button onclick="refreshEpisodeCache('${seriesId}', '${title || ''}')" 
+                        style="margin-top:10px; padding:8px 16px; background:#ff9800; color:black; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                    🔄 수동 캐시 재생성
+                </button>
+            </div>`;
+        return;
+    }
+
+    _currentBooks = books;
+    _currentSeriesId = seriesId;
+    _currentSeriesTitle = title;
+
+    books.forEach((book, index) => {
+        const size = book.size ? (book.size / 1024 / 1024).toFixed(1) + ' MB' : '';
+        const item = document.createElement('div');
+        item.className = 'episode-item';
+        item.innerHTML = `
+            <div>
+                <span class="ep-name">${book.name}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="ep-meta">${size}</span>
+                <button onclick="event.stopPropagation(); openEpisodeEdit(${index})" 
+                        class="ep-edit-btn" title="이름 변경">✏️</button>
+            </div>
+        `;
+        item.onclick = () => {
+            if (typeof openViewer === 'function') openViewer(book);
+        };
+        listEl.appendChild(item);
+    });
+}
+
+function openEpisodeEdit(index) {
+    const book = _currentBooks[index];
+    if (!book) return;
+
+    const newName = prompt('파일 이름 수정:', book.name);
+    if (newName === null || newName.trim() === '' || newName === book.name) return;
+
+    showToast("✏️ 이름 변경 중...", 3000);
+
+    API.request('view_rename_file', {
+        fileId: book.id,
+        newName: newName.trim(),
+        seriesId: _currentSeriesId
+    }).then(() => {
+        showToast('✅ 파일 이름이 변경되었습니다');
+        refreshEpisodeCache(_currentSeriesId, _currentSeriesTitle);
+    }).catch(e => {
+        showToast(`❌ 수정 실패: ${e.message}`, 5000);
+    });
+}
