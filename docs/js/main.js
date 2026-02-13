@@ -614,28 +614,32 @@ async function saveEditInfo() {
             });
             console.log("🖼 cover uploaded:", coverResult);
         }
+// 4. 로컬 데이터 즉시 반영 (UI 빠른 업데이트)
+if (editingSeriesIndex >= 0 && allSeries[editingSeriesIndex]) {
+    const series = allSeries[editingSeriesIndex];
+    series.name = infoData.title;
+    series.sourceId = infoData.id;
+    series.sourceUrl = infoData.url;
+    series.category = infoData.metadata.category;
+    series.metadata = {
+        ...series.metadata,
+        authors: infoData.metadata.authors,
+        status: infoData.metadata.status,
+        publisher: infoData.metadata.publisher,
+        category: infoData.metadata.category
+    };
+}
 
-        // 4. 로컬 데이터 업데이트 (새로고침 없이 반영)
-        if (editingSeriesIndex >= 0 && allSeries[editingSeriesIndex]) {
-            const series = allSeries[editingSeriesIndex];
-            series.name = infoData.title;
-            series.sourceId = infoData.id;
-            series.category = infoData.metadata.category;
-            series.metadata = {
-                ...series.metadata,
-                authors: infoData.metadata.authors,
-                status: infoData.metadata.status,
-                publisher: infoData.metadata.publisher,
-                category: infoData.metadata.category
-            };
-        }
+// 5. 그리드 즉시 반영
+renderGrid(allSeries);
 
-        // 5. 그리드 새로고침
-        renderGrid(allSeries);
+showToast("✅ 작품 정보가 저장되었습니다.");
+closeEditModal();
 
-        showToast("✅ 작품 정보가 저장되었습니다.");
-        closeEditModal();
-
+// 6. 서버 캐시 갱신 (백그라운드) ← 🔑 이게 핵심!
+setTimeout(() => {
+    refreshDB(null, true, true);  // silent=true, bypassCache=true
+}, 1000);
     } catch (e) {
         console.error("Edit Save Error:", e);
         showToast(`❌ 저장 실패: ${e.message}`, 5000);
