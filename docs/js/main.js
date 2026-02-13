@@ -495,12 +495,10 @@ function openEditModal(index) {
     const meta = series.metadata || {};
 
     document.getElementById('editTitle').value = series.name || '';
-    document.getElementById('editSourceId').value = series.sourceId || '';
     document.getElementById('editAuthor').value = (meta.authors || []).join(', ');
     document.getElementById('editStatus').value = meta.status || 'Unknown';
     document.getElementById('editPublisher').value = meta.publisher || '';
     document.getElementById('editCategory').value = series.category || meta.category || 'Manga';
-    document.getElementById('editUrl').value = series.sourceUrl || '';
 
     const preview = document.getElementById('editCoverPreview');
     const noImage = document.getElementById('editCoverNoImage');
@@ -576,7 +574,7 @@ async function saveEditInfo() {
                 category: document.getElementById('editCategory').value,
                 publisher: document.getElementById('editPublisher').value
             },
-            url: document.getElementById('editUrl').value.trim(),
+            url: allSeries[editingSeriesIndex]?.sourceUrl || '',
             author: authors.length > 0 ? authors[0] : 'Unknown',
             last_episode: 0,
             file_count: 0,
