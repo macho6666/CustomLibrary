@@ -566,8 +566,8 @@ async function saveEditInfo() {
         const authors = authorsRaw ? authorsRaw.split(',').map(a => a.trim()).filter(a => a) : [];
 
         const infoData = {
-            id: document.getElementById('editSourceId').value.trim(),
-            title: document.getElementById('editTitle').value.trim(),
+id: allSeries[editingSeriesIndex]?.sourceId || '',
+url: allSeries[editingSeriesIndex]?.sourceUrl || '',
             metadata: {
                 authors: authors.length > 0 ? authors : ['Unknown'],
                 status: document.getElementById('editStatus').value,
