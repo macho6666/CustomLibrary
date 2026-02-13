@@ -575,6 +575,7 @@ function handleCoverSelect(event) {
     
 async function saveEditInfo() {
     if (!editingSeriesId) return;
+    alert('folderId: ' + editingSeriesId);
     const saveBtn = document.querySelector('.edit-btn-save');
     saveBtn.textContent = '⏳ 저장 중...';
     saveBtn.disabled = true;
