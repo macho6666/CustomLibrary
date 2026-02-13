@@ -1125,7 +1125,6 @@ foliate-view {
   color: white;
 }
 
-.overlay .btn {
-    box-sizing: border-box !important;
-    display: inline-block !important;
+a.btn {
+    box-sizing: border-box;
 }
