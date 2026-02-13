@@ -38,10 +38,13 @@ body {
 
 /* Dashboard Layout */
 .app-container {
+  max-width: 1600px; /* Wider layout */
+  margin: 0 auto;
+  padding: 20px;
   max-width: 1600px;
   margin: 0 auto;
   padding: 20px;
-  min-height: 100vh;
+  min-height: 100vh; /* Allow grow */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -64,31 +67,28 @@ header {
 
 /* Tabs */
 .tab-bar {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  padding-bottom: 5px;
-  overflow-x: auto;
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-bottom: 5px;
+    overflow-x: auto;
 }
 .tab-btn {
-  background: #333;
-  border: none;
-  color: #aaa;
-  padding: 8px 16px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  white-space: nowrap;
-  transition: all 0.2s;
+    background: #333;
+    border: none;
+    color: #aaa;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: all 0.2s;
 }
-.tab-btn:hover {
-  background: #444;
-  color: white;
-}
+.tab-btn:hover { background: #444; color: white; }
 .tab-btn.active {
-  background: #3498db;
-  color: white;
-  font-weight: bold;
+    background: #3498db;
+    color: white;
+    font-weight: bold;
 }
 
 h1 {
@@ -158,7 +158,7 @@ h1 {
   cursor: pointer;
   border: 1px solid #333;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Ensure vertical stack */
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .card:hover {
@@ -171,7 +171,7 @@ h1 {
 .thumb-wrapper {
   position: relative;
   width: 100%;
-  padding-top: 140%;
+  padding-top: 140%; /* Aspect Ratio 1:1.4 */
   background: #2a2a2a;
   overflow: hidden;
 }
@@ -208,7 +208,7 @@ h1 {
 }
 
 .btn {
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 4px;
   border: none;
   cursor: pointer;
@@ -285,19 +285,6 @@ h1 {
   font-weight: bold;
   color: var(--folder);
 }
-
-/* 플랫폼 표시 */
-.publisher {
-  font-size: 11px;
-  color: #999;
-  background: #2a2a2a;
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .no-data {
   grid-column: 1/-1;
   text-align: center;
@@ -408,6 +395,8 @@ h1 {
   inset: 0;
   background: black;
   z-index: 3000;
+  /* Flex not strictly needed if we use absolute layers, but keeps structure */
+  display: none; /* toggled via JS */
 }
 
 /* Layer 1: Content */
@@ -426,125 +415,114 @@ h1 {
   position: absolute;
   inset: 0;
   z-index: 20;
-  pointer-events: none;
+  pointer-events: none; /* Let clicks pass through empty areas */
 }
 
 /* Header & Footer inside Controls Layer */
-.viewer-header,
-.viewer-footer {
+/* Header & Footer inside Controls Layer */
+.viewer-header, .viewer-footer {
   position: absolute;
-  left: 0;
+  left: 0; 
   width: 100%;
-  pointer-events: auto;
-  transition: opacity 0.3s, transform 0.3s;
-  opacity: 0;
+  pointer-events: auto; /* Re-enable clicks for buttons */
+  transition: opacity 0.3s, transform 0.3s; /* Add transform transition */
+  opacity: 0; /* Hidden by default */
   background: rgba(0, 0, 0, 0.8);
 }
 
-.viewer-header {
-  top: 0;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  box-sizing: border-box;
-  transform: translateY(-100%);
+.viewer-header { 
+    top: 0; 
+    height: 50px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 20px; 
+    box-sizing: border-box; 
+    transform: translateY(-100%); /* Slide out up */
 }
 
 /* Footer Layout */
-.viewer-footer {
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  gap: 10px;
-  box-sizing: border-box;
-  transform: translateY(100%);
-  background: rgba(30, 30, 30, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+.viewer-footer { 
+    bottom: 0; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 10px; 
+    gap: 10px; 
+    box-sizing: border-box; 
+    transform: translateY(100%); /* Slide out down */
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
 }
 
 .footer-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
 }
 
 /* Slider & Nav */
 .slider-container {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  gap: 10px;
-  max-width: 600px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+    max-width: 600px;
 }
 .slider-label {
-  color: #ccc;
-  font-size: 13px;
-  min-width: 30px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
+    color: #ccc;
+    font-size: 13px;
+    min-width: 30px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
 }
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  background: #444;
-  border-radius: 2px;
-  cursor: pointer;
+input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #444;
+    border-radius: 2px;
+    cursor: pointer;
 }
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  background: #007aff;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-  margin-top: -6px;
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #007aff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    margin-top: -6px;
 }
 
 /* Buttons */
-.nav-buttons {
-  display: flex;
-  gap: 10px;
+.nav-buttons { display: flex; gap: 10px; }
+.btn-icon {
+    background: none; border: none; color: #eee; font-size: 18px;
+    cursor: pointer; padding: 5px; border-radius: 5px; transition: background 0.2s;
 }
+.btn-icon:hover { background: rgba(255, 255, 255, 0.1); }
 
 /* Settings Row */
 .settings-row {
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 8px;
-  border-radius: 8px;
-  width: fit-content;
-  margin: 0 auto;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    border-radius: 8px;
+    width: fit-content;
+    margin: 0 auto;
 }
 .btn-toggle {
-  background: transparent;
-  border: 1px solid #444;
-  color: #888;
-  padding: 5px 12px;
-  font-size: 12px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
+    background: transparent; border: 1px solid #444; color: #888;
+    padding: 5px 12px; font-size: 12px; border-radius: 12px;
+    cursor: pointer; transition: all 0.2s;
 }
 .btn-toggle.active {
-  background: #007aff;
-  border-color: #007aff;
-  color: white;
-  font-weight: bold;
+    background: #007aff; border-color: #007aff; color: white; font-weight: bold;
 }
-.divider {
-  width: 1px;
-  height: 20px;
-  background: #444;
-  margin: 0 5px;
-}
+.divider { width: 1px; height: 20px; background: #444; margin: 0 5px; }
 
 /* Show Controls Class */
 .viewer-controls.show .viewer-header {
@@ -557,23 +535,33 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* Nav Zones (Inside Content Layer) */
-.viewer-image-container {
+.viewer-content {
+  flex: 1;
+  position: relative;
   width: 100%;
   height: 100%;
-  min-height: 0;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+}
+.viewer-image-container {
+  width: 100%;
+  height: 100%;
+  min-height: 0; /* Important for nested flex scroll */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Stop expansion */
 }
 .viewer-spread {
   display: flex;
   width: 100%;
   height: 100%;
-  min-height: 0;
+  min-height: 0; /* Important for nested flex scroll */
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: hidden; /* Stop expansion */
 }
 .viewer-page {
   max-width: 100%;
@@ -585,63 +573,59 @@ input[type="range"]::-webkit-slider-thumb {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 100%; 
   width: auto;
   max-width: 100%;
 }
 .viewer-spread > div.half {
-  width: 50%;
-  flex: 0 0 50%;
-  max-width: 50%;
+  width: 50%; /* Force 50% width */
+  flex: 0 0 50%; /* Don't grow, don't shrink, fixed at 50% */
+  max-width: 50%; /* Safety cap */
 }
 
 /* Spine Alignment (Gather to Center) */
-.viewer-spread > div.half:first-child {
-  justify-content: flex-end;
-}
-.viewer-spread > div.half:last-child {
-  justify-content: flex-start;
-}
+/* LTR Default: [Left Page] [Right Page] -> Align Inner */
+.viewer-spread > div.half:first-child { justify-content: flex-end; }
+.viewer-spread > div.half:last-child { justify-content: flex-start; }
 
-/* RTL Mode */
-.viewer-spread.is-rtl > div.half:first-child {
-  justify-content: flex-start;
-}
-.viewer-spread.is-rtl > div.half:last-child {
-  justify-content: flex-end;
-}
+/* RTL Mode: [Right Page] [Left Page] (visually) -> Align Inner */
+/* DOM Order in RTL is still [0, 1], but 0 is Right Page, 1 is Left Page */
+/* 0 (Right Page) should align Left (Start) */
+/* 1 (Left Page) should align Right (End) */
+.viewer-spread.is-rtl > div.half:first-child { justify-content: flex-start; }
+.viewer-spread.is-rtl > div.half:last-child { justify-content: flex-end; }
 
 /* Scroll Mode Styles */
 .viewer-content.scroll-mode {
-  overflow: hidden !important;
-  display: flex !important;
+  overflow: hidden !important; /* Wrapper shouldn't scroll */
+  display: flex !important; /* Ensure it fills space */
   flex-direction: column;
 }
 .viewer-scroll-container {
-  display: block;
-  height: 100%;
-  overflow-y: auto;
+  display: block; /* Flex column often behaves weird with scroll */
+  height: 100%; /* Fill viewport */
+  overflow-y: auto; /* Scroll internally */
   overflow-x: hidden;
   width: 100%;
-  max-width: 800px;
+  max-width: 800px; /* Limit width */
   margin: 0 auto;
   background: black;
 }
 .viewer-scroll-container img {
   width: 100%;
   height: auto;
-  min-height: 100px;
-  max-height: none !important;
+  min-height: 100px; /* Ensure scrollbar exists even if loading */
+  max-height: none !important; /* Allow full height expansion */
   display: block;
 }
 
-/* Hide Scrollbar for Image Scroll Mode */
+/* Hide Scrollbar for Image Scroll Mode too */
 .viewer-scroll-container {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
 }
 .viewer-scroll-container::-webkit-scrollbar {
-  display: none;
+    display: none; /* Chrome/Safari */
 }
 
 .nav-zone {
@@ -733,394 +717,215 @@ input[type="range"]::-webkit-slider-thumb {
   margin-bottom: 10px;
 }
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Foliate Viewer Integration */
+/* Foliate Viewer Integration (Shared with Legacy EPUB) */
 #viewerScrollContainer.epub-mode {
-  width: 100%;
-  max-width: none;
-  height: 100%;
-  overflow-y: auto;
-  background: #fff;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 5;
+    width: 100%;
+    max-width: none; /* Override base class limit */
+    height: 100%; /* Fit to content layer */
+    overflow-y: auto; /* Allow scrolling for Legacy Mode */
+    background: #fff;
+    position: absolute; /* Relative to viewer-content */
+    top: 0;
+    left: 0;
+    z-index: 5; /* Above images(1), but BELOW Controls(20) */
 }
 
 /* Legacy EPUB Content Overrides */
-.epub-content,
-.epub-content * {
-  background-color: transparent !important;
-  color: inherit !important;
+.epub-content, .epub-content * {
+    background-color: transparent !important; /* Strip internal backgrounds */
+    color: inherit !important; /* Inherit our theme color */
 }
 .epub-content img {
-  max-width: 100%;
-  height: auto;
+    max-width: 100%;
+    height: auto;
 }
 
-/* Text Paged Mode */
+/* Text Paged Mode (Horizontal Pagination) */
 #viewerScrollContainer.epub-mode.paged-mode {
-  overflow-x: hidden;
-  overflow-y: hidden;
-  display: block;
-  height: 100vh;
+    overflow-x: hidden; /* JS Controlled */
+    overflow-y: hidden;
+    display: block;
+    height: 100vh; /* Full Height */
 }
 
 /* Scroll Mode override */
 #viewerScrollContainer.epub-mode.scroll-mode {
-  overflow-y: auto;
-  overflow-x: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .viewer-page-wrapper.text-mode {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Fix "Floating" look: Align to Top */
+    height: 100%;
+    width: 100%;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Crucial: Prevents wrapper from expanding with content */
+    position: relative;
+    z-index: 1;
 }
 .epub-content.paged-view {
-  height: calc(100vh - 120px);
-  column-fill: auto;
-  width: 100%;
-  max-width: 1100px;
-  padding: 0 40px;
-  box-sizing: border-box;
-  text-align: justify;
-  overflow-y: hidden;
-  overflow-x: hidden;
+    height: calc(100vh - 120px); 
+    column-fill: auto; 
+    width: 100%; /* Fill wrapper */
+    max-width: 1100px; /* Constrain reading width */
+    padding: 0 40px; 
+    box-sizing: border-box;
+    text-align: justify;
+    
+    /* Ensure no vertical scroll inside */
+    overflow-y: hidden;
+    overflow-x: hidden; /* Programmatic scroll only */
 }
 
 /* Scroll View Constraint */
 .epub-content.scroll-view {
-  width: 100%;
-  height: 100% !important;
-  max-height: 100vh !important;
-  max-width: 900px;
-  padding: 40px;
-  box-sizing: border-box;
-  overflow-y: auto !important;
-  display: block !important;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+    width: 100%;
+    height: 100% !important; /* Force fit to parent */
+    max-height: 100vh !important; /* Safety cap */
+    max-width: 900px; /* Readability constraint */
+    padding: 40px; 
+    box-sizing: border-box;
+    overflow-y: auto !important; /* Force scrollbar */
+    display: block !important;
+    /* margin: 0 auto; - handled by flex wrapper */
+    
+    /* Hide Scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
 }
 .epub-content.scroll-view::-webkit-scrollbar {
-  display: none;
+    display: none; /* Chrome/Safari */
 }
 
 /* Mobile Tweaks */
 @media (max-width: 800px) {
-  .epub-content.paged-view {
-    padding: 10px 20px;
-    column-gap: 20px !important;
-  }
+    .epub-content.paged-view {
+        padding: 10px 20px;
+        column-gap: 20px !important;
+    }
 }
 
 /* Dark Mode Override for Container */
 body.dark-mode #viewerScrollContainer.epub-mode {
-  background: #1a1a1a;
+    background: #1a1a1a;
 }
 
 foliate-view {
-  width: 100%;
-  height: 100%;
-  display: block;
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 /* =========================================
-   New Text Viewer Layout
+   New Text Viewer Layout (Integrated from test.html)
    ========================================= */
 
 :root {
-  --view-width: 700px;
-  --view-height: 850px;
+    --view-width: 700px;
+    --view-height: 850px;
 }
 
 /* Viewer Main Frame */
 .book-container {
-  width: var(--view-width);
-  height: var(--view-height);
-  background-color: #fdfaf2;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  position: relative;
-  border-radius: 8px;
-  margin: auto;
-  display: none;
+    width: var(--view-width);
+    height: var(--view-height);
+    background-color: #fdfaf2; /* Paper color */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px;
+    margin: auto; /* Center in viewer-content */
+    display: none; /* Hidden by default, shown in Text Mode */
 }
 
 /* Multi-column Body */
 .text-columns {
-  width: 100%;
-  height: 100%;
-  column-width: var(--view-width);
-  column-gap: 0;
-  transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1);
-  column-fill: auto;
+    width: 100%;
+    height: 100%;
+    column-width: var(--view-width);
+    column-gap: 0;
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1);
+    /* Ensure fill */
+    column-fill: auto;
+    height: 100%;
 }
 
 .inner-content {
-  padding: 60px 50px;
-  line-height: 1.8;
-  font-size: 1.15rem;
-  color: #333;
-  text-align: justify;
-  box-sizing: border-box;
+    padding: 60px 50px; /* Adjusted padding */
+    line-height: 1.8;
+    font-size: 1.15rem;
+    color: #333;
+    text-align: justify;
+    box-sizing: border-box;
+    /* Font settings will be overridden by JS settings */
 }
 
 /* Floating Controls (Bottom Center) */
 .floating-controls {
-  position: absolute;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 5px 15px;
-  border-radius: 30px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-  gap: 10px;
-  z-index: 50;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 15px;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    backdrop-filter: blur(5px);
+    gap: 10px;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
 }
 
+/* Show floating controls on hover or interaction state */
 .book-container:hover .floating-controls,
 .floating-controls.show {
-  opacity: 1;
-  pointer-events: auto;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .nav-btn.float {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #555;
-  padding: 0 5px;
-  transition: 0.2s;
-  line-height: 1;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #555;
+    padding: 0 5px;
+    transition: 0.2s;
+    line-height: 1;
 }
 
-.nav-btn.float:hover {
-  color: #000;
-  transform: scale(1.1);
-}
-.nav-btn.float:disabled {
-  color: #ccc;
-  cursor: default;
-  transform: none;
-}
+.nav-btn.float:hover { color: #000; transform: scale(1.1); }
+.nav-btn.float:disabled { color: #ccc; cursor: default; transform: none; }
 
 .page-indicator-float {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #666;
-  min-width: 70px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #666;
+    min-width: 70px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Touch Zones */
 .side-tap {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 20%;
-  cursor: pointer;
-  z-index: 5;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 20%; /* Wider touch area */
+    cursor: pointer;
+    z-index: 5;
+    /* background: rgba(255,0,0,0.1); Debug */ 
 }
-.left-tap {
-  left: 0;
-}
-.right-tap {
-  right: 0;
-}
-/* =========================================
-   Edit Modal Styles
-   ========================================= */
-
-.edit-modal {
-  max-width: 550px;
-  max-height: 90vh;
-}
-
-.edit-modal .modal-body {
-  padding: 20px;
-  overflow-y: auto;
-}
-
-/* 커버 섹션 */
-.edit-cover-section {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #333;
-}
-
-.edit-cover-preview {
-  width: 100px;
-  height: 140px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #2a2a2a;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.edit-cover-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.edit-cover-no-image {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 11px;
-}
-
-.edit-cover-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.btn-upload {
-  background: #444;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  text-align: center;
-  transition: background 0.2s;
-  width: auto;
-  box-shadow: none;
-}
-
-.btn-upload:hover {
-  background: #555;
-}
-
-.edit-cover-filename {
-  font-size: 11px;
-  color: var(--accent);
-  word-break: break-all;
-}
-
-/* 편집 폼 */
-.edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.edit-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.edit-field label {
-  font-size: 12px;
-  color: #999;
-  font-weight: bold;
-}
-
-.edit-field input,
-.edit-field select {
-  background: #333;
-  border: 1px solid #555;
-  color: white;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.edit-field input:focus,
-.edit-field select:focus {
-  border-color: var(--accent);
-}
-
-.edit-field select {
-  cursor: pointer;
-}
-
-.edit-field select option {
-  background: #333;
-  color: white;
-}
-
-/* 버튼 */
-.edit-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.edit-btn-cancel {
-  background: #444;
-  color: #ccc;
-  padding: 10px 20px;
-  width: auto;
-  box-shadow: none;
-}
-
-.edit-btn-cancel:hover {
-  background: #555;
-}
-
-.edit-btn-save {
-  background: var(--accent);
-  color: black;
-  padding: 10px 24px;
-  font-weight: bold;
-  width: auto;
-  box-shadow: none;
-}
-
-.edit-btn-save:hover {
-  background: #00e892;
-}
-
-.edit-btn-save:disabled {
-  background: #555;
-  color: #888;
-  cursor: not-allowed;
-}
-
-/* 카드 편집 버튼 */
-.btn-edit {
-  background: #ff9800;
-  color: black;
-}
-
-.btn-edit:hover {
-  background: #ffb74d;
-}
-/* 카드 오버레이 버튼 통일 */
-.btn-list {
-  background: #444;
-  color: white;
-}
+.left-tap { left: 0; }
+.right-tap { right: 0; }
