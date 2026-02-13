@@ -1127,4 +1127,5 @@ foliate-view {
 
 .overlay .btn {
     box-sizing: border-box !important;
+    display: inline-block !important;
 }
