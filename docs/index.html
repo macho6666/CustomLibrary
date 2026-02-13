@@ -4,17 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>⭐My Library⭐</title>
-    <!-- CSS -->
     <link rel="stylesheet" href="css/style.css?v=1.0.0" />
-    <!-- Core Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/bridge.js"></script>
-    <script src="js/api_client.js"></script>   
+    <script src="js/api_client.js"></script>
     <script src="js/main.js"></script>
     <link rel="icon" href="data:,">
   </head>
   <body>
-    <!-- App Container -->
     <div class="app-container">
       <header>
         <div class="header-top">
@@ -38,18 +35,14 @@
           </div>
         </div>
 
-        <!-- Category Tabs -->
         <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchTab('all')">
-            전체
-          </button>
+          <button class="tab-btn active" onclick="switchTab('all')">전체</button>
           <button class="tab-btn" onclick="switchTab('Webtoon')">웹툰</button>
           <button class="tab-btn" onclick="switchTab('Manga')">만화</button>
           <button class="tab-btn" onclick="switchTab('Novel')">소설</button>
           <button class="tab-btn" onclick="toggleSettings()" title="사이트 설정">⚙️</button>
         </div>
 
-        <!-- Settings Panel -->
         <div
           id="domainPanel"
           style="
@@ -61,7 +54,6 @@
             color: #ddd;
           "
         >
-          <!-- 1. Shortcuts (Numbers Only) -->
           <h3
             style="
               margin: 0 0 10px 0;
@@ -113,7 +105,6 @@
             </div>
           </div>
 
-          <!-- 2. Connection Settings -->
           <h3
             style="
               margin: 0 0 10px 0;
@@ -186,7 +177,6 @@
             </small>
           </div>
 
-          <!-- 3. Viewer Defaults -->
           <h3
             style="
               margin: 0 0 10px 0;
@@ -287,13 +277,8 @@
         </div>
       </header>
 
-      <!-- Grid -->
-      <div class="grid-container" id="grid">
-        <!-- Cards injected by main.js -->
-      </div>
+      <div class="grid-container" id="grid"></div>
     </div>
-
-    <!-- Modals -->
 
     <!-- 1. Config Modal (First Run) -->
     <div id="configModal" class="modal-overlay">
@@ -349,6 +334,7 @@
         </div>
       </div>
     </div>
+
     <!-- Edit Info Modal -->
     <div id="editModal" class="modal-overlay">
       <div class="modal edit-modal">
@@ -376,6 +362,11 @@
               <label>제목</label>
               <input type="text" id="editTitle" placeholder="작품 제목">
             </div>
+            <!-- ✅ 소스 ID 필드 추가 -->
+            <div class="edit-field">
+              <label>소스 ID</label>
+              <input type="text" id="editSourceId" placeholder="토키 사이트 번호">
+            </div>
             <div class="edit-field">
               <label>작가</label>
               <input type="text" id="editAuthor" placeholder="작가명 (여러명: 쉼표 구분)">
@@ -389,23 +380,23 @@
                 <option value="휴재">휴재</option>
               </select>
             </div>
-<div class="edit-field">
-    <label>플랫폼</label>
-    <select id="editPublisher">
-        <option value="">미지정</option>
-        <option value="네이버">네이버</option>
-        <option value="카카오">카카오</option>
-        <option value="문피아">문피아</option>
-        <option value="조아라">조아라</option>
-        <option value="리디">리디</option>
-        <option value="노벨피아">노벨피아</option>
-        <option value="레진코믹스">레진코믹스</option>
-        <option value="탑툰">탑툰</option>
-        <option value="봄툰">봄툰</option>
-        <option value="일본만화">일본만화</option>
-        <option value="기타플랫폼">기타플랫폼</option>
-    </select>
-</div>
+            <div class="edit-field">
+              <label>플랫폼</label>
+              <select id="editPublisher">
+                <option value="">미지정</option>
+                <option value="네이버">네이버</option>
+                <option value="카카오">카카오</option>
+                <option value="문피아">문피아</option>
+                <option value="조아라">조아라</option>
+                <option value="리디">리디</option>
+                <option value="노벨피아">노벨피아</option>
+                <option value="레진코믹스">레진코믹스</option>
+                <option value="탑툰">탑툰</option>
+                <option value="봄툰">봄툰</option>
+                <option value="일본만화">일본만화</option>
+                <option value="기타플랫폼">기타플랫폼</option>
+              </select>
+            </div>
             <div class="edit-field">
               <label>카테고리</label>
               <select id="editCategory">
@@ -413,6 +404,11 @@
                 <option value="Webtoon">웹툰 (Webtoon)</option>
                 <option value="Novel">소설 (Novel)</option>
               </select>
+            </div>
+            <!-- ✅ 원본 URL 필드 추가 -->
+            <div class="edit-field">
+              <label>원본 URL</label>
+              <input type="text" id="editUrl" placeholder="https://...">
             </div>
           </div>
 
@@ -424,6 +420,7 @@
         </div>
       </div>
     </div>
+
     <!-- 2. Episode Modal -->
     <div id="episodeModal" class="modal-overlay">
       <div class="modal">
@@ -438,10 +435,7 @@
     </div>
 
     <!-- 3. Viewer Overlay -->
-    <!-- 3. Viewer Overlay -->
-    <!-- 3. Viewer Overlay -->
     <div id="viewerOverlay" class="viewer-overlay">
-      <!-- Layer 1: Content (Images & Scroll) -->
       <div
         class="viewer-content"
         id="viewerContent"
@@ -450,28 +444,21 @@
         <div class="nav-zone nav-prev"></div>
         <div class="nav-zone nav-next"></div>
         <div id="viewerImageContainer" class="viewer-image-container"></div>
-        <!-- Scroll Container will be injected here or reused -->
         <div
           id="viewerScrollContainer"
           class="viewer-scroll-container"
           style="display: none"
         ></div>
-
-        <!-- Page Counter (Floating) -->
         <div id="pageCounter" class="page-counter">- / -</div>
       </div>
 
-      <!-- Layer 2: Controls (Header & Footer) -->
       <div id="viewerControls" class="viewer-controls">
-        <!-- Top Header -->
         <div class="viewer-header">
           <span class="viewer-title" id="viewerTitle">TokiViewer</span>
           <button class="btn-icon close-btn" onclick="closeViewer()">×</button>
         </div>
 
-        <!-- Cloud/Bottom Footer -->
         <div class="viewer-footer">
-          <!-- Row 1: Navigation & Slider -->
           <div class="footer-row main-row">
             <button
               class="btn-icon"
@@ -502,9 +489,7 @@
             </div>
           </div>
 
-          <!-- Row 2: Settings Toggles -->
           <div class="footer-row settings-row">
-            <!-- Image Mode Settings -->
             <button
               id="btnTwoPage"
               class="btn-toggle image-only"
@@ -534,7 +519,6 @@
               일본어(우좌)
             </button>
 
-            <!-- EPUB Mode Settings -->
             <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">
               글자 -
             </button>
@@ -561,7 +545,6 @@
       <div style="color: #888">데이터 불러오는 중...</div>
     </div>
 
-    <!-- Scripts -->
     <script type="module" src="js/include.js?v=3.3.4"></script>
   </body>
 </html>
