@@ -929,7 +929,3 @@ foliate-view {
 }
 .left-tap { left: 0; }
 .right-tap { right: 0; }
-
-a.btn {
-    box-sizing: border-box;
-}
