@@ -575,7 +575,10 @@ function handleCoverSelect(event) {
     
 async function saveEditInfo() {
     if (!editingSeriesId) return;
-    alert('folderId: ' + editingSeriesId);
+    
+    // 🔄 저장 안내 팝업
+    showToast("💾 변경하겠습니다. 잠시만 기다려주세요...", 5000);
+    
     const saveBtn = document.querySelector('.edit-btn-save');
     saveBtn.textContent = '⏳ 저장 중...';
     saveBtn.disabled = true;
