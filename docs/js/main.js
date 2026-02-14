@@ -674,7 +674,14 @@ function renderEpisodeList(books, seriesId, title) {
             </div>`;
         return;
     }
-    // ✨ 여기에 추가! (books가 있을 때)
+// books가 있을 때
+if (typeof updateCurrentBookList === 'function') {
+    updateCurrentBookList(books);
+}
+
+_currentBooks = books;
+_currentSeriesId = seriesId;
+_currentSeriesTitle = title;
     window.currentBookList = books;
 
     _currentBooks = books;
