@@ -51,6 +51,9 @@ window.handleViewerClick = handleViewerClick;
 window.onSliderInput = onSliderInput;
 window.onSliderChange = onSliderChange;
 
+// ✨ 호환성을 위한 별칭 추가 (핵심 수정!)
+window.openViewer = loadViewer;
+
 // Initialize Key Controls
 initKeyControls(); // Start listening
 console.log("🚀 Viewer Modules Loaded & Initialized");
