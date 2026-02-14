@@ -1,9 +1,9 @@
 /**
  * Viewer Modules Aggregator
- * Exposes all necessary functions to global window object
  */
 
-import { vState } from './state.js';
+import { vState, updateCurrentBookList } from './state.js';  // ✨ 수정됨
+
 import { 
     openEpisodeList, 
     loadViewer, 
@@ -51,11 +51,10 @@ window.handleViewerClick = handleViewerClick;
 window.onSliderInput = onSliderInput;
 window.onSliderChange = onSliderChange;
 
-// Initialize Key Controls
-initKeyControls(); // Start listening
-console.log("🚀 Viewer Modules Loaded & Initialized");
-
-// 맨 아래 window 노출 부분에 추가
+// ✨ 추가됨!
 window.updateCurrentBookList = updateCurrentBookList;
 window.openViewer = loadViewer;
+
+// Initialize Key Controls
+initKeyControls();
 console.log("🚀 Viewer Modules Loaded & Initialized");
