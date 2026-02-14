@@ -54,3 +54,8 @@ window.onSliderChange = onSliderChange;
 // Initialize Key Controls
 initKeyControls(); // Start listening
 console.log("🚀 Viewer Modules Loaded & Initialized");
+
+// 맨 아래 window 노출 부분에 추가
+window.updateCurrentBookList = updateCurrentBookList;
+window.openViewer = loadViewer;
+console.log("🚀 Viewer Modules Loaded & Initialized");
