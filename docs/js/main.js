@@ -694,8 +694,10 @@ function renderEpisodeList(books, seriesId, title) {
             </div>
         `;
         item.onclick = () => {
-            if (typeof openViewer === 'function') openViewer(book);
-        };
+    if (typeof loadViewer === 'function') {
+        loadViewer(index);  // ← book 대신 index 전달!
+    }
+};
         listEl.appendChild(item);
     });
 }
