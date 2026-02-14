@@ -77,10 +77,18 @@ export async function loadViewer(index, isContinuous = false) {
         } else {
             if (nextBookPreload && nextBookPreload.index === index) setNextBookPreload(null);
 
+            // ✨ 파일명 전달 추가!
             result = await fetchAndUnzip(book.id, book.size || 0, (progress) => {
                 const el = container.querySelector('div');
                 if (el) el.innerText = progress;
-            });
+            }, book.name);
+
+            // ✨ external 타입 처리 (PDF 등)
+            if (result && result.type === 'external') {
+                closeViewer();
+                return;
+            }
+
             blobUrls = result; 
         }
 
@@ -118,12 +126,6 @@ export async function loadViewer(index, isContinuous = false) {
             renderScrollMode();
             const lastPage = getProgress(book.seriesId, book.id);
              if (!isContinuous && lastPage > 0) {
-                 // scrollToPage is in renderer, but we need to import it.
-                 // Actually scrollToPage is exported from renderer.js
-                 // We need to import it here? 
-                 // No, wait. loadViewer calls renderScrollMode which sets up scroll.
-                 // But scrollToPage is needed here.
-                 // I will import it.
                  const { scrollToPage } = await import('./renderer.js');
                  scrollToPage(lastPage);
              }
@@ -178,7 +180,8 @@ export function preloadNextEpisode() {
     if (window.isPreloading) return;
 
     window.isPreloading = true;
-    fetchAndUnzip(currentBookList[nextIndex].id, currentBookList[nextIndex].size || 0, null)
+    // ✨ 파일명 전달 추가!
+    fetchAndUnzip(currentBookList[nextIndex].id, currentBookList[nextIndex].size || 0, null, currentBookList[nextIndex].name)
         .then(blobUrls => {
             setNextBookPreload({ index: nextIndex, images: blobUrls });
             showToast("📦 다음 화 준비 완료!", 3000);
