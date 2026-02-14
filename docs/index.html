@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Library</title>
+    <title>⭐ My Library ⭐</title>
     <link rel="stylesheet" href="css/style.css?v=1.0.0" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/bridge.js"></script>
@@ -15,23 +15,23 @@
     <div class="app-container">
       <header>
         <div class="header-top">
-          <h1 onclick="location.reload()">⭐My Library⭐</h1>
+          <h1 onclick="location.reload()">My Library</h1>
           <div class="controls">
             <input
               type="text"
               id="search"
               class="search-box"
-              placeholder="작품 검색..."
+              placeholder="🔍작품 검색..."
               onkeyup="filterData()"
             />
           </div>
         </div>
 
         <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchTab('all')">전체</button>
-          <button class="tab-btn" onclick="switchTab('Webtoon')">웹툰</button>
-          <button class="tab-btn" onclick="switchTab('Manga')">만화</button>
-          <button class="tab-btn" onclick="switchTab('Novel')">소설</button>
+          <button class="tab-btn active" onclick="switchTab('all')">ALL</button>
+          <button class="tab-btn" onclick="switchTab('Novel')">NOVEL</button>
+          <button class="tab-btn" onclick="switchTab('Webtoon')">WEBTOON</button>
+          <button class="tab-btn" onclick="switchTab('Manga')">COMIC</button>
           <button class="tab-btn" onclick="toggleSettings()" title="사이트 설정">⚙️</button>
           <button class="tab-btn btn-refresh" id="refreshBtn" onclick="refreshDB(null, false, true)" title="새로고침 (캐시 재구축)">↻</button>
         </div>
