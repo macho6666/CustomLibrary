@@ -674,22 +674,13 @@ function renderEpisodeList(books, seriesId, title) {
             </div>`;
         return;
     }
-// books가 있을 때
-if (typeof updateCurrentBookList === 'function') {
-    updateCurrentBookList(books);
-}
 
-_currentBooks = books;
-_currentSeriesId = seriesId;
-_currentSeriesTitle = title;
-    window.currentBookList = books;
+    // ✨ viewer_modules용 (state.js 연동)
+    if (typeof updateCurrentBookList === 'function') {
+        updateCurrentBookList(books);
+    }
 
-    _currentBooks = books;
-    _currentSeriesId = seriesId;
-    _currentSeriesTitle = title;
-
-    books.forEach((book, index) => {
-        
+    // main.js 내부용
     _currentBooks = books;
     _currentSeriesId = seriesId;
     _currentSeriesTitle = title;
@@ -709,10 +700,10 @@ _currentSeriesTitle = title;
             </div>
         `;
         item.onclick = () => {
-    if (typeof loadViewer === 'function') {
-        loadViewer(index);  // ← book 대신 index 전달!
-    }
-};
+            if (typeof loadViewer === 'function') {
+                loadViewer(index);
+            }
+        };
         listEl.appendChild(item);
     });
 }
@@ -757,6 +748,7 @@ function openEpisodeEdit(index) {
         showToast(`❌ 수정 실패: ${e.message}`, 5000);
     });
 }
+
 // ============================================================
 // 🚀 Expose Globals
 // ============================================================
