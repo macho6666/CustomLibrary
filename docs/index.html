@@ -328,91 +328,85 @@
       </div>
     </div>
 
-    <!-- Edit Info Modal -->
-    <div id="editModal" class="modal-overlay">
-      <div class="modal edit-modal">
-        <div class="modal-header">
-          <div class="modal-title">✏️ 작품 정보 편집</div>
-          <button class="modal-close" onclick="closeEditModal()">×</button>
+<!-- Edit Info Modal -->
+<div id="editModal" class="modal-overlay">
+  <div class="modal edit-modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ 작품 정보 편집</div>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- 커버 이미지 -->
+      <div class="edit-cover-section">
+        <div class="edit-cover-preview">
+          <img id="editCoverPreview" src="" alt="커버">
+          <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
         </div>
-        <div class="modal-body">
-          <!-- 커버 이미지 -->
-          <div class="edit-cover-section">
-            <div class="edit-cover-preview">
-              <img id="editCoverPreview" src="" alt="커버">
-              <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
-            </div>
-            <div class="edit-cover-actions">
-              <label class="btn btn-upload" for="editCoverFile">📷 커버 업로드</label>
-              <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
-              <div class="edit-cover-filename" id="editCoverFilename"></div>
-            </div>
-          </div>
-
-          <!-- 편집 폼 -->
-          <div class="edit-form">
-            <div class="edit-field">
-              <label>제목</label>
-              <input type="text" id="editTitle" placeholder="작품 제목">
-            </div>
-            <!-- ✅ 소스 ID 필드 추가 -->
-            <div class="edit-field">
-              <label>소스 ID</label>
-              <input type="text" id="editSourceId" placeholder="토키 사이트 번호">
-            </div>
-            <div class="edit-field">
-              <label>작가</label>
-              <input type="text" id="editAuthor" placeholder="작가명 (여러명: 쉼표 구분)">
-            </div>
-            <div class="edit-field">
-              <label>연재상태</label>
-              <select id="editStatus">
-                <option value="Unknown">알수없음</option>
-                <option value="연재중">연재중</option>
-                <option value="완결">완결</option>
-                <option value="휴재">휴재</option>
-              </select>
-            </div>
-            <div class="edit-field">
-              <label>플랫폼</label>
-              <select id="editPublisher">
-                <option value="">미지정</option>
-                <option value="네이버">네이버</option>
-                <option value="카카오">카카오</option>
-                <option value="문피아">문피아</option>
-                <option value="조아라">조아라</option>
-                <option value="리디">리디</option>
-                <option value="노벨피아">노벨피아</option>
-                <option value="레진코믹스">레진코믹스</option>
-                <option value="탑툰">탑툰</option>
-                <option value="봄툰">봄툰</option>
-                <option value="일본만화">일본만화</option>
-                <option value="기타플랫폼">기타플랫폼</option>
-              </select>
-            </div>
-            <div class="edit-field">
-              <label>카테고리</label>
-              <select id="editCategory">
-                <option value="Manga">만화 (Manga)</option>
-                <option value="Webtoon">웹툰 (Webtoon)</option>
-                <option value="Novel">소설 (Novel)</option>
-              </select>
-            </div>
-            <!-- ✅ 원본 URL 필드 추가 -->
-            <div class="edit-field">
-              <label>원본 URL</label>
-              <input type="text" id="editUrl" placeholder="https://...">
-            </div>
-          </div>
-
-          <!-- 버튼 -->
-          <div class="edit-buttons">
-            <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
-            <button class="btn edit-btn-save" onclick="saveEditInfo()">💾 저장</button>
-          </div>
+        <div class="edit-cover-actions">
+          <label class="btn btn-upload" for="editCoverFile">📷 커버 업로드</label>
+          <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
+          <div class="edit-cover-filename" id="editCoverFilename"></div>
         </div>
       </div>
+
+      <!-- 편집 폼 -->
+      <div class="edit-form">
+        <div class="edit-field">
+          <label>제목</label>
+          <input type="text" id="editTitle" placeholder="작품 제목">
+        </div>
+        <div class="edit-field">
+          <label>작가</label>
+          <input type="text" id="editAuthor" placeholder="작가명 (여러명: 쉼표 구분)">
+        </div>
+        <div class="edit-field">
+          <label>연재상태</label>
+          <select id="editStatus">
+            <option value="Unknown">알수없음</option>
+            <option value="연재중">연재중</option>
+            <option value="완결">완결</option>
+            <option value="휴재">휴재</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>플랫폼</label>
+          <select id="editPublisher">
+            <option value="">미지정</option>
+            <option value="네이버">네이버</option>
+            <option value="카카오">카카오</option>
+            <option value="문피아">문피아</option>
+            <option value="조아라">조아라</option>
+            <option value="리디">리디</option>
+            <option value="노벨피아">노벨피아</option>
+            <option value="레진코믹스">레진코믹스</option>
+            <option value="탑툰">탑툰</option>
+            <option value="봄툰">봄툰</option>
+            <option value="일본만화">일본만화</option>
+            <option value="기타플랫폼">기타플랫폼</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>카테고리</label>
+          <select id="editCategory">
+            <option value="Manga">만화 (Manga)</option>
+            <option value="Webtoon">웹툰 (Webtoon)</option>
+            <option value="Novel">소설 (Novel)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 숨김 필드 (데이터 유지용) -->
+      <input type="hidden" id="editSourceId">
+      <input type="hidden" id="editUrl">
+
+      <!-- 버튼 -->
+      <div class="edit-buttons">
+        <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
+        <button class="btn edit-btn-save" onclick="saveEditInfo()">💾 저장</button>
+      </div>
     </div>
+  </div>
+</div>
 
     <!-- 2. Episode Modal -->
     <div id="episodeModal" class="modal-overlay">
