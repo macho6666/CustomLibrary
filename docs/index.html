@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Bookshelf</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,459 +14,491 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8f9fa;
             min-height: 100vh;
-            padding: 40px 20px;
         }
 
+        /* 헤더 */
+        .header {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            padding: 20px 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #212529;
+            font-weight: 700;
+        }
+
+        /* 컨테이너 */
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 40px;
         }
 
-        h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 48px;
-            color: white;
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .subtitle {
-            text-align: center;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 40px;
-            font-size: 16px;
-        }
-
-        /* 통계 카드 */
-        .stats {
+        /* 통계 */
+        .stats-bar {
             display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 30px;
+            gap: 40px;
+            margin-bottom: 40px;
+            padding: 20px 0;
         }
 
-        .stat-card {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            padding: 20px 40px;
-            border-radius: 15px;
-            text-align: center;
-            color: white;
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .stat-number {
-            font-size: 36px;
-            font-weight: 700;
-            font-family: 'Playfair Display', serif;
+        .stat-icon {
+            font-size: 24px;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
         }
 
         .stat-label {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-top: 5px;
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* 책장 */
-        .bookshelf {
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            margin-bottom: 30px;
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        /* 책장 섹션 */
+        .shelf-section {
+            margin-bottom: 50px;
+        }
+
+        .shelf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #dee2e6;
         }
 
         .shelf-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 24px;
-            margin-bottom: 30px;
-            color: #333;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
-        }
-
-        /* 책들 가로 배치 */
-        .books-row {
+            font-size: 22px;
+            font-weight: 700;
+            color: #212529;
             display: flex;
-            gap: 5px;
-            align-items: flex-end;
-            padding: 20px 0;
-            border-bottom: 5px solid #8B4513;
-            background: linear-gradient(to bottom, transparent 0%, rgba(139,69,19,0.1) 100%);
-            overflow-x: auto;
-            min-height: 280px;
-        }
-
-        .books-row::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .books-row::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .books-row::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
-        }
-
-        /* 책 (세로로 세운 모양) */
-        .book {
-            width: 50px;
-            min-width: 50px;
-            height: 240px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 3px;
-            box-shadow: 
-                2px 0 5px rgba(0,0,0,0.2),
-                inset -2px 0 3px rgba(0,0,0,0.1);
-        }
-
-        .book:hover {
-            transform: translateY(-20px);
-            box-shadow: 
-                2px 10px 20px rgba(0,0,0,0.3),
-                inset -2px 0 3px rgba(0,0,0,0.1);
-        }
-
-        /* 책등 텍스트 */
-        .book-spine {
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 15px 5px;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            font-weight: 600;
-            font-size: 11px;
-            line-height: 1.3;
-            position: relative;
+            gap: 10px;
         }
 
-        .book-spine::before {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: rgba(0,0,0,0.2);
-        }
-
-        .book-title-spine {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-height: 180px;
-        }
-
-        .book-author-spine {
-            font-size: 9px;
-            opacity: 0.9;
-            margin-top: 10px;
-            font-weight: 400;
-        }
-
-        /* 책 색상 (랜덤) */
-        .book-color-1 { background: linear-gradient(to right, #e74c3c, #c0392b); }
-        .book-color-2 { background: linear-gradient(to right, #3498db, #2980b9); }
-        .book-color-3 { background: linear-gradient(to right, #2ecc71, #27ae60); }
-        .book-color-4 { background: linear-gradient(to right, #f39c12, #d68910); }
-        .book-color-5 { background: linear-gradient(to right, #9b59b6, #8e44ad); }
-        .book-color-6 { background: linear-gradient(to right, #1abc9c, #16a085); }
-        .book-color-7 { background: linear-gradient(to right, #34495e, #2c3e50); }
-        .book-color-8 { background: linear-gradient(to right, #e67e22, #d35400); }
-        .book-color-9 { background: linear-gradient(to right, #95a5a6, #7f8c8d); }
-        .book-color-10 { background: linear-gradient(to right, #c0392b, #a93226); }
-
-        /* 책 두께 랜덤 */
-        .book-thick { width: 60px; min-width: 60px; }
-        .book-thin { width: 35px; min-width: 35px; }
-        .book-normal { width: 50px; min-width: 50px; }
-
-        /* 툴팁 (책 정보) */
-        .book-tooltip {
-            position: absolute;
-            bottom: 110%;
-            left: 50%;
-            transform: translateX(-50%) scale(0);
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 250px;
-            z-index: 100;
-            transition: all 0.3s ease;
-            pointer-events: none;
-        }
-
-        .book:hover .book-tooltip {
-            transform: translateX(-50%) scale(1);
-        }
-
-        .tooltip-cover {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .tooltip-title {
-            font-weight: 600;
-            color: #333;
+        .shelf-count {
             font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .tooltip-author {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .tooltip-status {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
+            color: #6c757d;
             font-weight: 500;
         }
 
-        .status-읽음 { background: #d4edda; color: #155724; }
-        .status-읽는중 { background: #fff3cd; color: #856404; }
-        .status-읽고싶음 { background: #d1ecf1; color: #0c5460; }
+        /* 책 그리드 */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 24px;
+        }
+
+        /* 책 카드 */
+        .book-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .book-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            border-color: #dee2e6;
+        }
+
+        /* 책 표지 */
+        .book-cover {
+            width: 100%;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            background: #e9ecef;
+            position: relative;
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .book-card:hover .book-cover img {
+            transform: scale(1.05);
+        }
+
+        /* 책 정보 */
+        .book-info {
+            padding: 16px;
+        }
+
+        .book-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 6px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 40px;
+        }
+
+        .book-author {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .book-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .book-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .status-읽음 { 
+            background: #d1f4e0; 
+            color: #0a6e31; 
+        }
+        
+        .status-읽는중 { 
+            background: #fff3cd; 
+            color: #856404; 
+        }
+        
+        .status-읽고싶음 { 
+            background: #cfe2ff; 
+            color: #084298; 
+        }
+
+        .book-rating {
+            font-size: 12px;
+        }
 
         /* 반응형 */
         @media (max-width: 768px) {
-            h1 { font-size: 32px; }
-            .bookshelf { padding: 20px; }
-            .books-row { min-height: 220px; }
-            .book { height: 200px; }
-            .stats { flex-direction: column; gap: 15px; }
-            .stat-card { padding: 15px 30px; }
+            .container {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .books-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 16px;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .shelf-title {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .books-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .book-info {
+                padding: 12px;
+            }
+
+            .book-title {
+                font-size: 13px;
+                min-height: 36px;
+            }
+
+            .book-author {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- 헤더 -->
+    <div class="header">
         <h1>📚 My Bookshelf</h1>
-        <p class="subtitle">A collection of books that shaped my journey</p>
+    </div>
 
-        <!-- 통계 -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number">24</div>
-                <div class="stat-label">Total Books</div>
+    <div class="container">
+        <!-- 통계 바 -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon">📚</div>
+                <div class="stat-info">
+                    <span class="stat-label">Total</span>
+                    <span class="stat-value">24</span>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">18</div>
-                <div class="stat-label">Books Read</div>
+            <div class="stat-item">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <span class="stat-label">Read</span>
+                    <span class="stat-value">18</span>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">3</div>
-                <div class="stat-label">Currently Reading</div>
+            <div class="stat-item">
+                <div class="stat-icon">📖</div>
+                <div class="stat-info">
+                    <span class="stat-label">Reading</span>
+                    <span class="stat-value">3</span>
+                </div>
             </div>
-        </div>
-
-        <!-- 읽음 책장 -->
-        <div class="bookshelf">
-            <div class="shelf-title">✅ 읽음</div>
-            <div class="books-row">
-                <!-- 샘플 책들 -->
-                <div class="book book-color-1 book-normal">
-                    <div class="book-spine">
-                        <div class="book-title-spine">클린 코드</div>
-                        <div class="book-author-spine">로버트 C. 마틴</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/11681152/XL" class="tooltip-cover">
-                        <div class="tooltip-title">클린 코드</div>
-                        <div class="tooltip-author">로버트 C. 마틴</div>
-                        <span class="tooltip-status status-읽음">읽음</span>
-                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
-                    </div>
-                </div>
-
-                <div class="book book-color-2 book-thick">
-                    <div class="book-spine">
-                        <div class="book-title-spine">리팩터링</div>
-                        <div class="book-author-spine">마틴 파울러</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/89649360/XL" class="tooltip-cover">
-                        <div class="tooltip-title">리팩터링 2판</div>
-                        <div class="tooltip-author">마틴 파울러</div>
-                        <span class="tooltip-status status-읽음">읽음</span>
-                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
-                    </div>
-                </div>
-
-                <div class="book book-color-3 book-normal">
-                    <div class="book-spine">
-                        <div class="book-title-spine">오브젝트</div>
-                        <div class="book-author-spine">조영호</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/74219491/XL" class="tooltip-cover">
-                        <div class="tooltip-title">오브젝트</div>
-                        <div class="tooltip-author">조영호</div>
-                        <span class="tooltip-status status-읽음">읽음</span>
-                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
-                    </div>
-                </div>
-
-                <div class="book book-color-4 book-thin">
-                    <div class="book-spine">
-                        <div class="book-title-spine">실용주의 프로그래머</div>
-                        <div class="book-author-spine">데이비드 토머스</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/107077663/XL" class="tooltip-cover">
-                        <div class="tooltip-title">실용주의 프로그래머</div>
-                        <div class="tooltip-author">데이비드 토머스</div>
-                        <span class="tooltip-status status-읽음">읽음</span>
-                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐</span>
-                    </div>
-                </div>
-
-                <div class="book book-color-5 book-normal">
-                    <div class="book-spine">
-                        <div class="book-title-spine">이펙티브 자바</div>
-                        <div class="book-author-spine">조슈아 블로크</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/65551284/XL" class="tooltip-cover">
-                        <div class="tooltip-title">이펙티브 자바</div>
-                        <div class="tooltip-author">조슈아 블로크</div>
-                        <span class="tooltip-status status-읽음">읽음</span>
-                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
-                    </div>
-                </div>
-
-                <div class="book book-color-6 book-thick">
-                    <div class="book-spine">
-                        <div class="book-title-spine">테스트 주도 개발</div>
-                        <div class="book-author-spine">켄트 벡</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/12246033/XL" class="tooltip-cover">
-                        <div class="tooltip-title">테스트 주도 개발</div>
-                        <div class="tooltip-author">켄트 벡</div>
-                        <span class="tooltip-status status-읽음">읽음</span>
-                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐</span>
-                    </div>
+            <div class="stat-item">
+                <div class="stat-icon">💭</div>
+                <div class="stat-info">
+                    <span class="stat-label">Want to Read</span>
+                    <span class="stat-value">3</span>
                 </div>
             </div>
         </div>
 
-        <!-- 읽는중 책장 -->
-        <div class="bookshelf">
-            <div class="shelf-title">📖 읽는중</div>
-            <div class="books-row">
-                <div class="book book-color-7 book-normal">
-                    <div class="book-spine">
-                        <div class="book-title-spine">도메인 주도 설계</div>
-                        <div class="book-author-spine">에릭 에반스</div>
+        <!-- 읽음 섹션 -->
+        <div class="shelf-section">
+            <div class="shelf-header">
+                <h2 class="shelf-title">
+                    <span>✅</span>
+                    <span>Read</span>
+                </h2>
+                <span class="shelf-count">18 books</span>
+            </div>
+            <div class="books-grid">
+                <!-- 책 카드 1 -->
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/11681152/XL" alt="클린 코드">
                     </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/5312881/XL" class="tooltip-cover">
-                        <div class="tooltip-title">도메인 주도 설계</div>
-                        <div class="tooltip-author">에릭 에반스</div>
-                        <span class="tooltip-status status-읽는중">읽는중</span>
-                    </div>
-                </div>
-
-                <div class="book book-color-8 book-thick">
-                    <div class="book-spine">
-                        <div class="book-title-spine">GoF의 디자인 패턴</div>
-                        <div class="book-author-spine">에리히 감마</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/17525598/XL" class="tooltip-cover">
-                        <div class="tooltip-title">GoF의 디자인 패턴</div>
-                        <div class="tooltip-author">에리히 감마 외</div>
-                        <span class="tooltip-status status-읽는중">읽는중</span>
+                    <div class="book-info">
+                        <div class="book-title">클린 코드</div>
+                        <div class="book-author">로버트 C. 마틴</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽음">Read</span>
+                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="book book-color-9 book-normal">
-                    <div class="book-spine">
-                        <div class="book-title-spine">클린 아키텍처</div>
-                        <div class="book-author-spine">로버트 C. 마틴</div>
+                <!-- 책 카드 2 -->
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/89649360/XL" alt="리팩터링">
                     </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/77283734/XL" class="tooltip-cover">
-                        <div class="tooltip-title">클린 아키텍처</div>
-                        <div class="tooltip-author">로버트 C. 마틴</div>
-                        <span class="tooltip-status status-읽는중">읽는중</span>
+                    <div class="book-info">
+                        <div class="book-title">리팩터링 2판</div>
+                        <div class="book-author">마틴 파울러</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽음">Read</span>
+                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 책 카드 3 -->
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/74219491/XL" alt="오브젝트">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">오브젝트</div>
+                        <div class="book-author">조영호</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽음">Read</span>
+                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 책 카드 4 -->
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/107077663/XL" alt="실용주의 프로그래머">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">실용주의 프로그래머</div>
+                        <div class="book-author">데이비드 토머스</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽음">Read</span>
+                            <span class="book-rating">⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 책 카드 5 -->
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/65551284/XL" alt="이펙티브 자바">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">이펙티브 자바 3판</div>
+                        <div class="book-author">조슈아 블로크</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽음">Read</span>
+                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 책 카드 6 -->
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/12246033/XL" alt="테스트 주도 개발">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">테스트 주도 개발</div>
+                        <div class="book-author">켄트 벡</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽음">Read</span>
+                            <span class="book-rating">⭐⭐⭐⭐</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 읽고싶음 책장 -->
-        <div class="bookshelf">
-            <div class="shelf-title">💭 읽고싶음</div>
-            <div class="books-row">
-                <div class="book book-color-10 book-thin">
-                    <div class="book-spine">
-                        <div class="book-title-spine">객체지향의 사실과 오해</div>
-                        <div class="book-author-spine">조영호</div>
+        <!-- 읽는중 섹션 -->
+        <div class="shelf-section">
+            <div class="shelf-header">
+                <h2 class="shelf-title">
+                    <span>📖</span>
+                    <span>Currently Reading</span>
+                </h2>
+                <span class="shelf-count">3 books</span>
+            </div>
+            <div class="books-grid">
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/5312881/XL" alt="도메인 주도 설계">
                     </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/18249021/XL" class="tooltip-cover">
-                        <div class="tooltip-title">객체지향의 사실과 오해</div>
-                        <div class="tooltip-author">조영호</div>
-                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
-                    </div>
-                </div>
-
-                <div class="book book-color-1 book-normal">
-                    <div class="book-spine">
-                        <div class="book-title-spine">함수형 자바스크립트</div>
-                        <div class="book-author-spine">루이스 아텐시오</div>
-                    </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/56885507/XL" class="tooltip-cover">
-                        <div class="tooltip-title">함수형 자바스크립트 프로그래밍</div>
-                        <div class="tooltip-author">루이스 아텐시오</div>
-                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
+                    <div class="book-info">
+                        <div class="book-title">도메인 주도 설계</div>
+                        <div class="book-author">에릭 에반스</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽는중">Reading</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="book book-color-2 book-thick">
-                    <div class="book-spine">
-                        <div class="book-title-spine">컴퓨터 프로그램의 구조와 해석</div>
-                        <div class="book-author-spine">해롤드 에이블슨</div>
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/17525598/XL" alt="GoF의 디자인 패턴">
                     </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/3137802/XL" class="tooltip-cover">
-                        <div class="tooltip-title">컴퓨터 프로그램의 구조와 해석</div>
-                        <div class="tooltip-author">해롤드 에이블슨</div>
-                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
+                    <div class="book-info">
+                        <div class="book-title">GoF의 디자인 패턴</div>
+                        <div class="book-author">에리히 감마 외</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽는중">Reading</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="book book-color-3 book-normal">
-                    <div class="book-spine">
-                        <div class="book-title-spine">알고리즘 문제 해결 전략</div>
-                        <div class="book-author-spine">구종만</div>
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/77283734/XL" alt="클린 아키텍처">
                     </div>
-                    <div class="book-tooltip">
-                        <img src="https://image.yes24.com/goods/8006522/XL" class="tooltip-cover">
-                        <div class="tooltip-title">프로그래밍 대회에서 배우는 알고리즘 문제 해결 전략</div>
-                        <div class="tooltip-author">구종만</div>
-                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
+                    <div class="book-info">
+                        <div class="book-title">클린 아키텍처</div>
+                        <div class="book-author">로버트 C. 마틴</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽는중">Reading</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 읽고싶음 섹션 -->
+        <div class="shelf-section">
+            <div class="shelf-header">
+                <h2 class="shelf-title">
+                    <span>💭</span>
+                    <span>Want to Read</span>
+                </h2>
+                <span class="shelf-count">3 books</span>
+            </div>
+            <div class="books-grid">
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/18249021/XL" alt="객체지향의 사실과 오해">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">객체지향의 사실과 오해</div>
+                        <div class="book-author">조영호</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽고싶음">Want to Read</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/56885507/XL" alt="함수형 자바스크립트">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">함수형 자바스크립트 프로그래밍</div>
+                        <div class="book-author">루이스 아텐시오</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽고싶음">Want to Read</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="book-card">
+                    <div class="book-cover">
+                        <img src="https://image.yes24.com/goods/8006522/XL" alt="알고리즘 문제 해결 전략">
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">프로그래밍 대회에서 배우는 알고리즘 문제 해결 전략</div>
+                        <div class="book-author">구종만</div>
+                        <div class="book-footer">
+                            <span class="book-status status-읽고싶음">Want to Read</span>
+                        </div>
                     </div>
                 </div>
             </div>
