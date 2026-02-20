@@ -1,508 +1,443 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bookshelf</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<!doctype html>
+<html lang="ko" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⭐ My Library ⭐</title>
+    <link rel="stylesheet" href="css/style.css?v=2.0.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/bridge.js"></script>
+    <script src="js/api_client.js"></script>
+    <script src="js/main.js"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <div class="app-container">
+      <header>
+        <div class="header-top">
+          <h1 onclick="location.reload()">📚 My Library</h1>
+          <div class="controls">
+            <input
+              type="text"
+              id="search"
+              class="search-box"
+              placeholder="🔍 작품 검색..."
+              onkeyup="filterData()"
+            />
+            <!-- 테마 토글 버튼 -->
+            <button class="btn-theme" onclick="toggleTheme()" title="테마 변경">
+              <span class="theme-icon">🌙</span>
+            </button>
+          </div>
+        </div>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f8f9fa;
-            min-height: 100vh;
-        }
+        <div class="tab-bar">
+          <div class="tab-group">
+            <button class="tab-btn active" onclick="switchTab('all')">📚 ALL</button>
+            <button class="tab-btn" onclick="switchTab('Novel')">📖 NOVEL</button>
+            <button class="tab-btn" onclick="switchTab('Webtoon')">🎨 WEBTOON</button>
+            <button class="tab-btn" onclick="switchTab('Manga')">📕 COMIC</button>
+          </div>
+          <div class="tab-tools">
+            <button class="tab-btn btn-settings" onclick="toggleSettings()" title="사이트 설정">⚙️</button>
+            <button class="tab-btn btn-refresh" id="refreshBtn" onclick="refreshDB(null, false, true)" title="새로고침 (캐시 재구축)">↻</button>
+          </div>
+        </div>
 
-        /* 헤더 */
-        .header {
-            background: white;
-            border-bottom: 1px solid #dee2e6;
-            padding: 20px 40px;
-        }
+        <div
+          id="domainPanel"
+          class="settings-panel"
+          style="display: none;"
+        >
+          <div class="settings-section">
+            <h3 class="settings-title">🔗 바로가기 도메인 (번호)</h3>
+            <div class="config-grid-3">
+              <div class="config-item">
+                <label class="config-label">마나토끼</label>
+                <input
+                  type="text"
+                  id="url_manatoki"
+                  class="config-input"
+                  placeholder="469"
+                />
+              </div>
+              <div class="config-item">
+                <label class="config-label">뉴토끼</label>
+                <input
+                  type="text"
+                  id="url_newtoki"
+                  class="config-input"
+                  placeholder="469"
+                />
+              </div>
+              <div class="config-item">
+                <label class="config-label">북토끼</label>
+                <input
+                  type="text"
+                  id="url_booktoki"
+                  class="config-input"
+                  placeholder="469"
+                />
+              </div>
+            </div>
+          </div>
 
-        .header h1 {
-            font-size: 28px;
-            color: #212529;
-            font-weight: 700;
-        }
+          <div class="settings-section">
+            <h3 class="settings-title">☁️ 서버 연결 설정</h3>
+            <div class="config-group">
+              <label class="config-label">Folder ID</label>
+              <input
+                type="text"
+                id="setting_folderId"
+                class="config-input"
+                placeholder="Google Drive Folder ID"
+              />
+            </div>
+            <div class="config-group">
+              <label class="config-label">GAS Deployment ID</label>
+              <input
+                type="text"
+                id="setting_deployId"
+                class="config-input"
+                placeholder="AKfycb..."
+              />
+            </div>
+            <div class="config-group">
+              <label class="config-label">API Key (보안)</label>
+              <input
+                type="password"
+                id="setting_apiKey"
+                class="config-input"
+                placeholder="API Key"
+              />
+              <small class="config-hint">UserScript 사용 시 자동 설정</small>
+            </div>
+          </div>
 
-        /* 컨테이너 */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px;
-        }
+          <div class="settings-section">
+            <h3 class="settings-title">👁️ 뷰어 기본 설정</h3>
+            <div class="config-check-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="pref_2page" />
+                <span>2쪽 보기</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="pref_cover" />
+                <span>표지 우선</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="pref_rtl" />
+                <span>일본만화(우좌)</span>
+              </label>
+            </div>
+          </div>
 
-        /* 통계 */
-        .stats-bar {
-            display: flex;
-            gap: 40px;
-            margin-bottom: 40px;
-            padding: 20px 0;
-        }
+          <div class="config-group" style="display: none;">
+            <label class="config-label">소설 뷰어 엔진</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="view_engine" value="foliate" />
+                <span>Foliate (권장)</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="view_engine" value="legacy" checked />
+                <span>Legacy (텍스트)</span>
+              </label>
+            </div>
+          </div>
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+          <div class="settings-footer">
+            <button class="btn btn-save" onclick="saveActiveSettings()">
+              💾 전체 저장
+            </button>
+          </div>
+          <div id="viewerVersionDisplay" class="version-info">
+            Version: Loading...
+          </div>
+        </div>
+      </header>
 
-        .stat-icon {
-            font-size: 24px;
-        }
-
-        .stat-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #212529;
-        }
-
-        /* 책장 섹션 */
-        .shelf-section {
-            margin-bottom: 50px;
-        }
-
-        .shelf-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .shelf-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #212529;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .shelf-count {
-            font-size: 14px;
-            color: #6c757d;
-            font-weight: 500;
-        }
-
-        /* 책 그리드 */
-        .books-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 24px;
-        }
-
-        /* 책 카드 */
-        .book-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            border: 1px solid #e9ecef;
-        }
-
-        .book-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
-            border-color: #dee2e6;
-        }
-
-        /* 책 표지 */
-        .book-cover {
-            width: 100%;
-            aspect-ratio: 2/3;
-            overflow: hidden;
-            background: #e9ecef;
-            position: relative;
-        }
-
-        .book-cover img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .book-card:hover .book-cover img {
-            transform: scale(1.05);
-        }
-
-        /* 책 정보 */
-        .book-info {
-            padding: 16px;
-        }
-
-        .book-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #212529;
-            margin-bottom: 6px;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            min-height: 40px;
-        }
-
-        .book-author {
-            font-size: 13px;
-            color: #6c757d;
-            margin-bottom: 12px;
-            display: -webkit-box;
-            -webkit-line-clamp: 1;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .book-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .book-status {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .status-읽음 { 
-            background: #d1f4e0; 
-            color: #0a6e31; 
-        }
-        
-        .status-읽는중 { 
-            background: #fff3cd; 
-            color: #856404; 
-        }
-        
-        .status-읽고싶음 { 
-            background: #cfe2ff; 
-            color: #084298; 
-        }
-
-        .book-rating {
-            font-size: 12px;
-        }
-
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            .header {
-                padding: 15px 20px;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
-
-            .books-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 16px;
-            }
-
-            .stats-bar {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .shelf-title {
-                font-size: 18px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .books-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .book-info {
-                padding: 12px;
-            }
-
-            .book-title {
-                font-size: 13px;
-                min-height: 36px;
-            }
-
-            .book-author {
-                font-size: 12px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- 헤더 -->
-    <div class="header">
-        <h1>📚 My Bookshelf</h1>
+      <main class="main-content">
+        <div class="grid-container" id="grid"></div>
+      </main>
     </div>
 
-    <div class="container">
-        <!-- 통계 바 -->
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-icon">📚</div>
-                <div class="stat-info">
-                    <span class="stat-label">Total</span>
-                    <span class="stat-value">24</span>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">✅</div>
-                <div class="stat-info">
-                    <span class="stat-label">Read</span>
-                    <span class="stat-value">18</span>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">📖</div>
-                <div class="stat-info">
-                    <span class="stat-label">Reading</span>
-                    <span class="stat-value">3</span>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">💭</div>
-                <div class="stat-info">
-                    <span class="stat-label">Want to Read</span>
-                    <span class="stat-value">3</span>
-                </div>
-            </div>
+    <!-- 1. Config Modal (First Run) -->
+    <div id="configModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">⚙️ 서버 연결 설정</div>
         </div>
-
-        <!-- 읽음 섹션 -->
-        <div class="shelf-section">
-            <div class="shelf-header">
-                <h2 class="shelf-title">
-                    <span>✅</span>
-                    <span>Read</span>
-                </h2>
-                <span class="shelf-count">18 books</span>
-            </div>
-            <div class="books-grid">
-                <!-- 책 카드 1 -->
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/11681152/XL" alt="클린 코드">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">클린 코드</div>
-                        <div class="book-author">로버트 C. 마틴</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽음">Read</span>
-                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 책 카드 2 -->
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/89649360/XL" alt="리팩터링">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">리팩터링 2판</div>
-                        <div class="book-author">마틴 파울러</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽음">Read</span>
-                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 책 카드 3 -->
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/74219491/XL" alt="오브젝트">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">오브젝트</div>
-                        <div class="book-author">조영호</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽음">Read</span>
-                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 책 카드 4 -->
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/107077663/XL" alt="실용주의 프로그래머">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">실용주의 프로그래머</div>
-                        <div class="book-author">데이비드 토머스</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽음">Read</span>
-                            <span class="book-rating">⭐⭐⭐⭐</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 책 카드 5 -->
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/65551284/XL" alt="이펙티브 자바">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">이펙티브 자바 3판</div>
-                        <div class="book-author">조슈아 블로크</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽음">Read</span>
-                            <span class="book-rating">⭐⭐⭐⭐⭐</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 책 카드 6 -->
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/12246033/XL" alt="테스트 주도 개발">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">테스트 주도 개발</div>
-                        <div class="book-author">켄트 벡</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽음">Read</span>
-                            <span class="book-rating">⭐⭐⭐⭐</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-body" style="text-align: center">
+          <p class="modal-desc">
+            Google Apps Script 배포 URL과 폴더 ID를 입력하세요.<br />
+            (PC에서 Tampermonkey 스크립트 실행 시 자동 설정됩니다.)
+          </p>
+          <div class="config-group">
+            <label class="config-label">GAS 웹 앱 URL</label>
+            <input
+              type="text"
+              id="configApiUrl"
+              class="config-input"
+              placeholder="https://script.google.com/macros/s/.../exec"
+            />
+          </div>
+          <div class="config-group">
+            <label class="config-label">루트 폴더 ID</label>
+            <input
+              type="text"
+              id="configFolderId"
+              class="config-input"
+              placeholder="Google Drive Folder ID"
+            />
+          </div>
+          <div class="config-group">
+            <label class="config-label">API Key (보안)</label>
+            <input
+              type="password"
+              id="configApiKey"
+              class="config-input"
+              placeholder="API Key (선택사항)"
+            />
+            <small class="config-hint">UserScript 사용 시 자동으로 주입됩니다.</small>
+          </div>
+          <button class="btn btn-save" onclick="saveManualConfig()">
+            설정 저장
+          </button>
         </div>
-
-        <!-- 읽는중 섹션 -->
-        <div class="shelf-section">
-            <div class="shelf-header">
-                <h2 class="shelf-title">
-                    <span>📖</span>
-                    <span>Currently Reading</span>
-                </h2>
-                <span class="shelf-count">3 books</span>
-            </div>
-            <div class="books-grid">
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/5312881/XL" alt="도메인 주도 설계">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">도메인 주도 설계</div>
-                        <div class="book-author">에릭 에반스</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽는중">Reading</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/17525598/XL" alt="GoF의 디자인 패턴">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">GoF의 디자인 패턴</div>
-                        <div class="book-author">에리히 감마 외</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽는중">Reading</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/77283734/XL" alt="클린 아키텍처">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">클린 아키텍처</div>
-                        <div class="book-author">로버트 C. 마틴</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽는중">Reading</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 읽고싶음 섹션 -->
-        <div class="shelf-section">
-            <div class="shelf-header">
-                <h2 class="shelf-title">
-                    <span>💭</span>
-                    <span>Want to Read</span>
-                </h2>
-                <span class="shelf-count">3 books</span>
-            </div>
-            <div class="books-grid">
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/18249021/XL" alt="객체지향의 사실과 오해">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">객체지향의 사실과 오해</div>
-                        <div class="book-author">조영호</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽고싶음">Want to Read</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/56885507/XL" alt="함수형 자바스크립트">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">함수형 자바스크립트 프로그래밍</div>
-                        <div class="book-author">루이스 아텐시오</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽고싶음">Want to Read</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="book-card">
-                    <div class="book-cover">
-                        <img src="https://image.yes24.com/goods/8006522/XL" alt="알고리즘 문제 해결 전략">
-                    </div>
-                    <div class="book-info">
-                        <div class="book-title">프로그래밍 대회에서 배우는 알고리즘 문제 해결 전략</div>
-                        <div class="book-author">구종만</div>
-                        <div class="book-footer">
-                            <span class="book-status status-읽고싶음">Want to Read</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-</body>
+
+    <!-- Edit Info Modal -->
+    <div id="editModal" class="modal-overlay">
+      <div class="modal edit-modal">
+        <div class="modal-header">
+          <div class="modal-title">✏️ 작품 정보 편집</div>
+          <button class="modal-close" onclick="closeEditModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <!-- 커버 이미지 -->
+          <div class="edit-cover-section">
+            <div class="edit-cover-preview">
+              <img id="editCoverPreview" src="" alt="커버">
+              <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
+            </div>
+            <div class="edit-cover-actions">
+              <label class="btn btn-upload" for="editCoverFile">📷 커버 업로드</label>
+              <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
+              <div class="edit-cover-filename" id="editCoverFilename"></div>
+            </div>
+          </div>
+
+          <!-- 편집 폼 -->
+          <div class="edit-form">
+            <div class="edit-field">
+              <label>제목</label>
+              <input type="text" id="editTitle" placeholder="작품 제목">
+            </div>
+            <div class="edit-field">
+              <label>작가</label>
+              <input type="text" id="editAuthor" placeholder="작가명 (여러명: 쉼표 구분)">
+            </div>
+            <div class="edit-field">
+              <label>연재상태</label>
+              <select id="editStatus">
+                <option value="Unknown">알수없음</option>
+                <option value="연재중">연재중</option>
+                <option value="완결">완결</option>
+                <option value="휴재">휴재</option>
+              </select>
+            </div>
+            <div class="edit-field">
+              <label>플랫폼</label>
+              <select id="editPublisher">
+                <option value="">미지정</option>
+                <option value="네이버">네이버</option>
+                <option value="카카오">카카오</option>
+                <option value="문피아">문피아</option>
+                <option value="조아라">조아라</option>
+                <option value="리디">리디</option>
+                <option value="노벨피아">노벨피아</option>
+                <option value="레진코믹스">레진코믹스</option>
+                <option value="탑툰">탑툰</option>
+                <option value="봄툰">봄툰</option>
+                <option value="일본만화">일본만화</option>
+                <option value="기타플랫폼">기타플랫폼</option>
+              </select>
+            </div>
+            <div class="edit-field">
+              <label>카테고리</label>
+              <select id="editCategory">
+                <option value="Manga">만화 (Manga)</option>
+                <option value="Webtoon">웹툰 (Webtoon)</option>
+                <option value="Novel">소설 (Novel)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 숨김 필드 (데이터 유지용) -->
+          <input type="hidden" id="editSourceId">
+          <input type="hidden" id="editUrl">
+
+          <!-- 버튼 -->
+          <div class="edit-buttons">
+            <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
+            <button class="btn edit-btn-save" onclick="saveEditInfo()">💾 저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Episode Modal -->
+    <div id="episodeModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">📄 회차 목록</div>
+          <button class="modal-close" onclick="closeEpisodeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div id="episodeList" class="episode-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Viewer Overlay -->
+    <div id="viewerOverlay" class="viewer-overlay">
+      <div
+        class="viewer-content"
+        id="viewerContent"
+        onclick="handleViewerClick(event)"
+      >
+        <div class="nav-zone nav-prev"></div>
+        <div class="nav-zone nav-next"></div>
+        <div id="viewerImageContainer" class="viewer-image-container"></div>
+        <div
+          id="viewerScrollContainer"
+          class="viewer-scroll-container"
+          style="display: none"
+        ></div>
+        <div id="pageCounter" class="page-counter">- / -</div>
+      </div>
+
+      <div id="viewerControls" class="viewer-controls">
+        <div class="viewer-header">
+          <span class="viewer-title" id="viewerTitle">TokiViewer</span>
+          <button class="btn-icon close-btn" onclick="closeViewer()">×</button>
+        </div>
+
+        <div class="viewer-footer">
+          <div class="footer-row main-row">
+            <button
+              class="btn-icon"
+              onclick="openEpisodeListFromViewer()"
+              title="목차"
+            >
+              📑
+            </button>
+
+            <div class="slider-container">
+              <span id="sliderCurrent" class="slider-label">1</span>
+              <input
+                type="range"
+                id="pageSlider"
+                min="1"
+                max="100"
+                value="1"
+                step="1"
+                oninput="onSliderInput(this.value)"
+                onchange="onSliderChange(this.value)"
+              />
+              <span id="sliderTotal" class="slider-label">100</span>
+            </div>
+
+            <div class="nav-buttons">
+              <button class="btn-icon" onclick="navigateViewer(-1)">◀</button>
+              <button class="btn-icon" onclick="navigateViewer(1)">▶</button>
+            </div>
+          </div>
+
+          <div class="footer-row settings-row">
+            <button
+              id="btnTwoPage"
+              class="btn-toggle image-only"
+              onclick="toggleViewMode()"
+            >
+              2쪽 보기
+            </button>
+            <button
+              id="btnCover"
+              class="btn-toggle image-only"
+              onclick="toggleCoverMode()"
+            >
+              표지 먼저
+            </button>
+            <button
+              id="btnScroll"
+              class="btn-toggle"
+              onclick="toggleScrollMode()"
+            >
+              스크롤 보기
+            </button>
+            <button
+              id="btnRtl"
+              class="btn-toggle image-only"
+              onclick="toggleRtlMode()"
+            >
+              일본어(우좌)
+            </button>
+
+            <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">
+              글자 -
+            </button>
+            <button class="btn-toggle epub-only" onclick="changeFontSize(2)">
+              글자 +
+            </button>
+
+            <div class="divider"></div>
+            <button
+              id="btnPreload"
+              class="btn-toggle"
+              onclick="togglePreloadMode()"
+            >
+              미리 등
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="pageLoader" class="loader-overlay">
+      <div class="spinner"></div>
+      <div class="loader-text">데이터 불러오는 중...</div>
+    </div>
+
+    <!-- 테마 토글 스크립트 -->
+    <script>
+      // 테마 초기화
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+      })();
+
+      function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+      }
+
+      function updateThemeIcon(theme) {
+        const icon = document.querySelector('.theme-icon');
+        if (icon) {
+          icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+        }
+      }
+    </script>
+
+    <script type="module" src="js/include.js?v=3.3.4"></script>
+  </body>
 </html>
