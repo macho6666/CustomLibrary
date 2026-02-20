@@ -1,537 +1,476 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>⭐ My Library ⭐</title>
-    <link rel="stylesheet" href="css/style.css?v=1.0.0" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="js/bridge.js"></script>
-    <script src="js/api_client.js"></script>
-    <script src="js/main.js"></script>
-    <link rel="icon" href="data:,">
-  </head>
-  <body>
-    <div class="app-container">
-      <header>
-        <div class="header-top">
-          <h1 onclick="location.reload()">My Library</h1>
-          <div class="controls">
-            <input
-              type="text"
-              id="search"
-              class="search-box"
-              placeholder="🔍작품 검색..."
-              onkeyup="filterData()"
-            />
-          </div>
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookshelf</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchTab('all')">ALL</button>
-          <button class="tab-btn" onclick="switchTab('Novel')">NOVEL</button>
-          <button class="tab-btn" onclick="switchTab('Webtoon')">WEBTOON</button>
-          <button class="tab-btn" onclick="switchTab('Manga')">COMIC</button>
-          <button class="tab-btn" onclick="toggleSettings()" title="사이트 설정">⚙️</button>
-          <button class="tab-btn btn-refresh" id="refreshBtn" onclick="refreshDB(null, false, true)" title="새로고침 (캐시 재구축)">↻</button>
-        </div>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
 
-        <div
-          id="domainPanel"
-          style="
-            display: none;
-            background: #252525;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        /* 통계 카드 */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* 책장 */
+        .bookshelf {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .shelf-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #333;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        /* 책들 가로 배치 */
+        .books-row {
+            display: flex;
+            gap: 5px;
+            align-items: flex-end;
+            padding: 20px 0;
+            border-bottom: 5px solid #8B4513;
+            background: linear-gradient(to bottom, transparent 0%, rgba(139,69,19,0.1) 100%);
+            overflow-x: auto;
+            min-height: 280px;
+        }
+
+        .books-row::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .books-row::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .books-row::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        /* 책 (세로로 세운 모양) */
+        .book {
+            width: 50px;
+            min-width: 50px;
+            height: 240px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+            box-shadow: 
+                2px 0 5px rgba(0,0,0,0.2),
+                inset -2px 0 3px rgba(0,0,0,0.1);
+        }
+
+        .book:hover {
+            transform: translateY(-20px);
+            box-shadow: 
+                2px 10px 20px rgba(0,0,0,0.3),
+                inset -2px 0 3px rgba(0,0,0,0.1);
+        }
+
+        /* 책등 텍스트 */
+        .book-spine {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px 5px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            font-weight: 600;
+            font-size: 11px;
+            line-height: 1.3;
+            position: relative;
+        }
+
+        .book-spine::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .book-title-spine {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-height: 180px;
+        }
+
+        .book-author-spine {
+            font-size: 9px;
+            opacity: 0.9;
+            margin-top: 10px;
+            font-weight: 400;
+        }
+
+        /* 책 색상 (랜덤) */
+        .book-color-1 { background: linear-gradient(to right, #e74c3c, #c0392b); }
+        .book-color-2 { background: linear-gradient(to right, #3498db, #2980b9); }
+        .book-color-3 { background: linear-gradient(to right, #2ecc71, #27ae60); }
+        .book-color-4 { background: linear-gradient(to right, #f39c12, #d68910); }
+        .book-color-5 { background: linear-gradient(to right, #9b59b6, #8e44ad); }
+        .book-color-6 { background: linear-gradient(to right, #1abc9c, #16a085); }
+        .book-color-7 { background: linear-gradient(to right, #34495e, #2c3e50); }
+        .book-color-8 { background: linear-gradient(to right, #e67e22, #d35400); }
+        .book-color-9 { background: linear-gradient(to right, #95a5a6, #7f8c8d); }
+        .book-color-10 { background: linear-gradient(to right, #c0392b, #a93226); }
+
+        /* 책 두께 랜덤 */
+        .book-thick { width: 60px; min-width: 60px; }
+        .book-thin { width: 35px; min-width: 35px; }
+        .book-normal { width: 50px; min-width: 50px; }
+
+        /* 툴팁 (책 정보) */
+        .book-tooltip {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: white;
             padding: 15px;
             border-radius: 10px;
-            margin-top: 10px;
-            color: #ddd;
-          "
-        >
-          <h3
-            style="
-              margin: 0 0 10px 0;
-              font-size: 14px;
-              border-bottom: 1px solid #444;
-              padding-bottom: 5px;
-            "
-          >
-            🔗 바로가기 도메인 (번호)
-          </h3>
-          <div
-            class="config-grid"
-            style="
-              display: grid;
-              grid-template-columns: 1fr 1fr 1fr;
-              gap: 10px;
-              margin-bottom: 15px;
-            "
-          >
-            <div>
-              <label style="font-size: 11px; color: #aaa">마나토끼</label>
-              <input
-                type="text"
-                id="url_manatoki"
-                class="config-input"
-                placeholder="469"
-                style="text-align: center"
-              />
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 250px;
+            z-index: 100;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .book:hover .book-tooltip {
+            transform: translateX(-50%) scale(1);
+        }
+
+        .tooltip-cover {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .tooltip-author {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .tooltip-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-읽음 { background: #d4edda; color: #155724; }
+        .status-읽는중 { background: #fff3cd; color: #856404; }
+        .status-읽고싶음 { background: #d1ecf1; color: #0c5460; }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .bookshelf { padding: 20px; }
+            .books-row { min-height: 220px; }
+            .book { height: 200px; }
+            .stats { flex-direction: column; gap: 15px; }
+            .stat-card { padding: 15px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 My Bookshelf</h1>
+        <p class="subtitle">A collection of books that shaped my journey</p>
+
+        <!-- 통계 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">24</div>
+                <div class="stat-label">Total Books</div>
             </div>
-            <div>
-              <label style="font-size: 11px; color: #aaa">뉴토끼</label>
-              <input
-                type="text"
-                id="url_newtoki"
-                class="config-input"
-                placeholder="469"
-                style="text-align: center"
-              />
+            <div class="stat-card">
+                <div class="stat-number">18</div>
+                <div class="stat-label">Books Read</div>
             </div>
-            <div>
-              <label style="font-size: 11px; color: #aaa">북토끼</label>
-              <input
-                type="text"
-                id="url_booktoki"
-                class="config-input"
-                placeholder="469"
-                style="text-align: center"
-              />
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Currently Reading</div>
             </div>
-          </div>
+        </div>
 
-          <h3
-            style="
-              margin: 0 0 10px 0;
-              font-size: 14px;
-              border-bottom: 1px solid #444;
-              padding-bottom: 5px;
-            "
-          >
-            ☁️ 서버 연결 설정
-          </h3>
-          <div class="config-group" style="margin-bottom: 15px">
-            <label
-              style="
-                font-size: 11px;
-                color: #aaa;
-                display: block;
-                margin-bottom: 3px;
-              "
-              >Folder ID</label
-            >
-            <input
-              type="text"
-              id="setting_folderId"
-              class="config-input"
-              placeholder="Google Drive Folder ID"
-            />
-          </div>
-          <div class="config-group" style="margin-bottom: 15px">
-            <label
-              style="
-                font-size: 11px;
-                color: #aaa;
-                display: block;
-                margin-bottom: 3px;
-              "
-              >GAS Deployment ID</label
-            >
-            <input
-              type="text"
-              id="setting_deployId"
-              class="config-input"
-              placeholder="AKfycb..."
-            />
-          </div>
-          <div class="config-group" style="margin-bottom: 15px">
-            <label
-              style="
-                font-size: 11px;
-                color: #aaa;
-                display: block;
-                margin-bottom: 3px;
-              "
-              >API Key (보안)</label
-            >
-            <input
-              type="password"
-              id="setting_apiKey"
-              class="config-input"
-              placeholder="API Key"
-            />
-            <small
-              style="
-                color: #555;
-                font-size: 10px;
-                display: block;
-                margin-top: 3px;
-              "
-            >
-              UserScript 사용 시 자동 설정
-            </small>
-          </div>
+        <!-- 읽음 책장 -->
+        <div class="bookshelf">
+            <div class="shelf-title">✅ 읽음</div>
+            <div class="books-row">
+                <!-- 샘플 책들 -->
+                <div class="book book-color-1 book-normal">
+                    <div class="book-spine">
+                        <div class="book-title-spine">클린 코드</div>
+                        <div class="book-author-spine">로버트 C. 마틴</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/11681152/XL" class="tooltip-cover">
+                        <div class="tooltip-title">클린 코드</div>
+                        <div class="tooltip-author">로버트 C. 마틴</div>
+                        <span class="tooltip-status status-읽음">읽음</span>
+                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
 
-          <h3
-            style="
-              margin: 0 0 10px 0;
-              font-size: 14px;
-              border-bottom: 1px solid #444;
-              padding-bottom: 5px;
-            "
-          >
-            👁️ 뷰어 기본 설정
-          </h3>
-          <div
-            class="config-check-group"
-            style="display: flex; gap: 15px; margin-bottom: 15px"
-          >
-            <label
-              style="
-                display: flex;
-                align-items: center;
-                cursor: pointer;
-                font-size: 12px;
-              "
-            >
-              <input type="checkbox" id="pref_2page" /> 2쪽 보기
-            </label>
-            <label
-              style="
-                display: flex;
-                align-items: center;
-                cursor: pointer;
-                font-size: 12px;
-              "
-            >
-              <input type="checkbox" id="pref_cover" /> 표지 우선
-            </label>
-            <label
-              style="
-                display: flex;
-                align-items: center;
-                cursor: pointer;
-                font-size: 12px;
-              "
-            >
-              <input type="checkbox" id="pref_rtl" /> 일본만화(우좌)
-            </label>
-          </div>
+                <div class="book book-color-2 book-thick">
+                    <div class="book-spine">
+                        <div class="book-title-spine">리팩터링</div>
+                        <div class="book-author-spine">마틴 파울러</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/89649360/XL" class="tooltip-cover">
+                        <div class="tooltip-title">리팩터링 2판</div>
+                        <div class="tooltip-author">마틴 파울러</div>
+                        <span class="tooltip-status status-읽음">읽음</span>
+                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
 
-          <div
-            class="config-group"
-            style="
-              margin-bottom: 15px;
-              border-top: 1px solid #333;
-              padding-top: 10px;
-              display: none;
-            "
-          >
-            <label
-              style="
-                font-size: 11px;
-                color: #aaa;
-                display: block;
-                margin-bottom: 5px;
-              "
-              >소설 뷰어 엔진</label
-            >
-            <div style="display: flex; gap: 15px; color: #ccc; font-size: 13px">
-              <label style="cursor: pointer"
-                ><input type="radio" name="view_engine" value="foliate" />
-                Foliate (권장)</label
-              >
-              <label style="cursor: pointer"
-                ><input
-                  type="radio"
-                  name="view_engine"
-                  value="legacy"
-                  checked
-                />
-                Legacy (텍스트)</label
-              >
+                <div class="book book-color-3 book-normal">
+                    <div class="book-spine">
+                        <div class="book-title-spine">오브젝트</div>
+                        <div class="book-author-spine">조영호</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/74219491/XL" class="tooltip-cover">
+                        <div class="tooltip-title">오브젝트</div>
+                        <div class="tooltip-author">조영호</div>
+                        <span class="tooltip-status status-읽음">읽음</span>
+                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
+
+                <div class="book book-color-4 book-thin">
+                    <div class="book-spine">
+                        <div class="book-title-spine">실용주의 프로그래머</div>
+                        <div class="book-author-spine">데이비드 토머스</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/107077663/XL" class="tooltip-cover">
+                        <div class="tooltip-title">실용주의 프로그래머</div>
+                        <div class="tooltip-author">데이비드 토머스</div>
+                        <span class="tooltip-status status-읽음">읽음</span>
+                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐</span>
+                    </div>
+                </div>
+
+                <div class="book book-color-5 book-normal">
+                    <div class="book-spine">
+                        <div class="book-title-spine">이펙티브 자바</div>
+                        <div class="book-author-spine">조슈아 블로크</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/65551284/XL" class="tooltip-cover">
+                        <div class="tooltip-title">이펙티브 자바</div>
+                        <div class="tooltip-author">조슈아 블로크</div>
+                        <span class="tooltip-status status-읽음">읽음</span>
+                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐⭐</span>
+                    </div>
+                </div>
+
+                <div class="book book-color-6 book-thick">
+                    <div class="book-spine">
+                        <div class="book-title-spine">테스트 주도 개발</div>
+                        <div class="book-author-spine">켄트 벡</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/12246033/XL" class="tooltip-cover">
+                        <div class="tooltip-title">테스트 주도 개발</div>
+                        <div class="tooltip-author">켄트 벡</div>
+                        <span class="tooltip-status status-읽음">읽음</span>
+                        <span style="margin-left:5px;font-size:12px;">⭐⭐⭐⭐</span>
+                    </div>
+                </div>
             </div>
-          </div>
-
-          <div class="config-group" style="text-align: right">
-            <button class="btn btn-save" onclick="saveActiveSettings()">
-              전체 저장
-            </button>
-          </div>
-          <div
-            id="viewerVersionDisplay"
-            style="
-              margin-top: 10px;
-              font-size: 11px;
-              color: #555;
-              text-align: center;
-            "
-          >
-            Version: Loading...
-          </div>
-        </div>
-      </header>
-
-      <div class="grid-container" id="grid"></div>
-    </div>
-
-    <!-- 1. Config Modal (First Run) -->
-    <div id="configModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <div class="modal-title">⚙️ 서버 연결 설정</div>
-        </div>
-        <div class="modal-body" style="text-align: center">
-          <p style="color: #aaa; font-size: 14px; margin-bottom: 20px">
-            Google Apps Script 배포 URL과 폴더 ID를 입력하세요.<br />
-            (PC에서 Tampermonkey 스크립트 실행 시 자동 설정됩니다.)
-          </p>
-          <div class="config-group">
-            <label class="config-label">GAS 웹 앱 URL</label>
-            <input
-              type="text"
-              id="configApiUrl"
-              class="config-input"
-              placeholder="https://script.google.com/macros/s/.../exec"
-            />
-          </div>
-          <div class="config-group">
-            <label class="config-label">루트 폴더 ID</label>
-            <input
-              type="text"
-              id="configFolderId"
-              class="config-input"
-              placeholder="Google Drive Folder ID"
-            />
-          </div>
-          <div class="config-group">
-            <label class="config-label">API Key (보안)</label>
-            <input
-              type="password"
-              id="configApiKey"
-              class="config-input"
-              placeholder="API Key (선택사항)"
-            />
-            <small
-              style="
-                color: #777;
-                font-size: 11px;
-                display: block;
-                margin-top: 5px;
-              "
-            >
-              UserScript 사용 시 자동으로 주입됩니다.
-            </small>
-          </div>
-          <button class="btn btn-save" onclick="saveManualConfig()">
-            설정 저장
-          </button>
-        </div>
-      </div>
-    </div>
-
-<!-- Edit Info Modal -->
-<div id="editModal" class="modal-overlay">
-  <div class="modal edit-modal">
-    <div class="modal-header">
-      <div class="modal-title">✏️ 작품 정보 편집</div>
-      <button class="modal-close" onclick="closeEditModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <!-- 커버 이미지 -->
-      <div class="edit-cover-section">
-        <div class="edit-cover-preview">
-          <img id="editCoverPreview" src="" alt="커버">
-          <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
-        </div>
-        <div class="edit-cover-actions">
-          <label class="btn btn-upload" for="editCoverFile">📷 커버 업로드</label>
-          <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
-          <div class="edit-cover-filename" id="editCoverFilename"></div>
-        </div>
-      </div>
-
-      <!-- 편집 폼 -->
-      <div class="edit-form">
-        <div class="edit-field">
-          <label>제목</label>
-          <input type="text" id="editTitle" placeholder="작품 제목">
-        </div>
-        <div class="edit-field">
-          <label>작가</label>
-          <input type="text" id="editAuthor" placeholder="작가명 (여러명: 쉼표 구분)">
-        </div>
-        <div class="edit-field">
-          <label>연재상태</label>
-          <select id="editStatus">
-            <option value="Unknown">알수없음</option>
-            <option value="연재중">연재중</option>
-            <option value="완결">완결</option>
-            <option value="휴재">휴재</option>
-          </select>
-        </div>
-        <div class="edit-field">
-          <label>플랫폼</label>
-          <select id="editPublisher">
-            <option value="">미지정</option>
-            <option value="네이버">네이버</option>
-            <option value="카카오">카카오</option>
-            <option value="문피아">문피아</option>
-            <option value="조아라">조아라</option>
-            <option value="리디">리디</option>
-            <option value="노벨피아">노벨피아</option>
-            <option value="레진코믹스">레진코믹스</option>
-            <option value="탑툰">탑툰</option>
-            <option value="봄툰">봄툰</option>
-            <option value="일본만화">일본만화</option>
-            <option value="기타플랫폼">기타플랫폼</option>
-          </select>
-        </div>
-        <div class="edit-field">
-          <label>카테고리</label>
-          <select id="editCategory">
-            <option value="Manga">만화 (Manga)</option>
-            <option value="Webtoon">웹툰 (Webtoon)</option>
-            <option value="Novel">소설 (Novel)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 숨김 필드 (데이터 유지용) -->
-      <input type="hidden" id="editSourceId">
-      <input type="hidden" id="editUrl">
-
-      <!-- 버튼 -->
-      <div class="edit-buttons">
-        <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
-        <button class="btn edit-btn-save" onclick="saveEditInfo()">💾 저장</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-    <!-- 2. Episode Modal -->
-    <div id="episodeModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <div class="modal-title">📄 회차 목록</div>
-          <button class="modal-close" onclick="closeEpisodeModal()">×</button>
-        </div>
-        <div class="modal-body">
-          <div id="episodeList" class="episode-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. Viewer Overlay -->
-    <div id="viewerOverlay" class="viewer-overlay">
-      <div
-        class="viewer-content"
-        id="viewerContent"
-        onclick="handleViewerClick(event)"
-      >
-        <div class="nav-zone nav-prev"></div>
-        <div class="nav-zone nav-next"></div>
-        <div id="viewerImageContainer" class="viewer-image-container"></div>
-        <div
-          id="viewerScrollContainer"
-          class="viewer-scroll-container"
-          style="display: none"
-        ></div>
-        <div id="pageCounter" class="page-counter">- / -</div>
-      </div>
-
-      <div id="viewerControls" class="viewer-controls">
-        <div class="viewer-header">
-          <span class="viewer-title" id="viewerTitle">TokiViewer</span>
-          <button class="btn-icon close-btn" onclick="closeViewer()">×</button>
         </div>
 
-        <div class="viewer-footer">
-          <div class="footer-row main-row">
-            <button
-              class="btn-icon"
-              onclick="openEpisodeListFromViewer()"
-              title="목차"
-            >
-              📑
-            </button>
+        <!-- 읽는중 책장 -->
+        <div class="bookshelf">
+            <div class="shelf-title">📖 읽는중</div>
+            <div class="books-row">
+                <div class="book book-color-7 book-normal">
+                    <div class="book-spine">
+                        <div class="book-title-spine">도메인 주도 설계</div>
+                        <div class="book-author-spine">에릭 에반스</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/5312881/XL" class="tooltip-cover">
+                        <div class="tooltip-title">도메인 주도 설계</div>
+                        <div class="tooltip-author">에릭 에반스</div>
+                        <span class="tooltip-status status-읽는중">읽는중</span>
+                    </div>
+                </div>
 
-            <div class="slider-container">
-              <span id="sliderCurrent" class="slider-label">1</span>
-              <input
-                type="range"
-                id="pageSlider"
-                min="1"
-                max="100"
-                value="1"
-                step="1"
-                oninput="onSliderInput(this.value)"
-                onchange="onSliderChange(this.value)"
-              />
-              <span id="sliderTotal" class="slider-label">100</span>
+                <div class="book book-color-8 book-thick">
+                    <div class="book-spine">
+                        <div class="book-title-spine">GoF의 디자인 패턴</div>
+                        <div class="book-author-spine">에리히 감마</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/17525598/XL" class="tooltip-cover">
+                        <div class="tooltip-title">GoF의 디자인 패턴</div>
+                        <div class="tooltip-author">에리히 감마 외</div>
+                        <span class="tooltip-status status-읽는중">읽는중</span>
+                    </div>
+                </div>
+
+                <div class="book book-color-9 book-normal">
+                    <div class="book-spine">
+                        <div class="book-title-spine">클린 아키텍처</div>
+                        <div class="book-author-spine">로버트 C. 마틴</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/77283734/XL" class="tooltip-cover">
+                        <div class="tooltip-title">클린 아키텍처</div>
+                        <div class="tooltip-author">로버트 C. 마틴</div>
+                        <span class="tooltip-status status-읽는중">읽는중</span>
+                    </div>
+                </div>
             </div>
-
-            <div class="nav-buttons">
-              <button class="btn-icon" onclick="navigateViewer(-1)">◀</button>
-              <button class="btn-icon" onclick="navigateViewer(1)">▶</button>
-            </div>
-          </div>
-
-          <div class="footer-row settings-row">
-            <button
-              id="btnTwoPage"
-              class="btn-toggle image-only"
-              onclick="toggleViewMode()"
-            >
-              2쪽 보기
-            </button>
-            <button
-              id="btnCover"
-              class="btn-toggle image-only"
-              onclick="toggleCoverMode()"
-            >
-              표지 먼저
-            </button>
-            <button
-              id="btnScroll"
-              class="btn-toggle"
-              onclick="toggleScrollMode()"
-            >
-              스크롤 보기
-            </button>
-            <button
-              id="btnRtl"
-              class="btn-toggle image-only"
-              onclick="toggleRtlMode()"
-            >
-              일본어(우좌)
-            </button>
-
-            <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">
-              글자 -
-            </button>
-            <button class="btn-toggle epub-only" onclick="changeFontSize(2)">
-              글자 +
-            </button>
-
-            <div class="divider"></div>
-            <button
-              id="btnPreload"
-              class="btn-toggle"
-              onclick="togglePreloadMode()"
-            >
-              미리 등
-            </button>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Loader -->
-    <div id="pageLoader" class="loader-overlay">
-      <div class="spinner"></div>
-      <div style="color: #888">데이터 불러오는 중...</div>
-    </div>
+        <!-- 읽고싶음 책장 -->
+        <div class="bookshelf">
+            <div class="shelf-title">💭 읽고싶음</div>
+            <div class="books-row">
+                <div class="book book-color-10 book-thin">
+                    <div class="book-spine">
+                        <div class="book-title-spine">객체지향의 사실과 오해</div>
+                        <div class="book-author-spine">조영호</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/18249021/XL" class="tooltip-cover">
+                        <div class="tooltip-title">객체지향의 사실과 오해</div>
+                        <div class="tooltip-author">조영호</div>
+                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
+                    </div>
+                </div>
 
-    <script type="module" src="js/include.js?v=3.3.4"></script>
-  </body>
+                <div class="book book-color-1 book-normal">
+                    <div class="book-spine">
+                        <div class="book-title-spine">함수형 자바스크립트</div>
+                        <div class="book-author-spine">루이스 아텐시오</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/56885507/XL" class="tooltip-cover">
+                        <div class="tooltip-title">함수형 자바스크립트 프로그래밍</div>
+                        <div class="tooltip-author">루이스 아텐시오</div>
+                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
+                    </div>
+                </div>
+
+                <div class="book book-color-2 book-thick">
+                    <div class="book-spine">
+                        <div class="book-title-spine">컴퓨터 프로그램의 구조와 해석</div>
+                        <div class="book-author-spine">해롤드 에이블슨</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/3137802/XL" class="tooltip-cover">
+                        <div class="tooltip-title">컴퓨터 프로그램의 구조와 해석</div>
+                        <div class="tooltip-author">해롤드 에이블슨</div>
+                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
+                    </div>
+                </div>
+
+                <div class="book book-color-3 book-normal">
+                    <div class="book-spine">
+                        <div class="book-title-spine">알고리즘 문제 해결 전략</div>
+                        <div class="book-author-spine">구종만</div>
+                    </div>
+                    <div class="book-tooltip">
+                        <img src="https://image.yes24.com/goods/8006522/XL" class="tooltip-cover">
+                        <div class="tooltip-title">프로그래밍 대회에서 배우는 알고리즘 문제 해결 전략</div>
+                        <div class="tooltip-author">구종만</div>
+                        <span class="tooltip-status status-읽고싶음">읽고싶음</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 </html>
