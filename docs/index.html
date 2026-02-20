@@ -12,111 +12,94 @@
     <link rel="icon" href="data:,">
   </head>
   <body>
-    <div class="app-container">
-      <header>
-        <div class="header-top">
-          <h1 onclick="location.reload()">📚 My Library</h1>
-          <div class="controls">
-            <input
-              type="text"
-              id="search"
-              class="search-box"
-              placeholder="🔍 작품 검색..."
-              onkeyup="filterData()"
-            />
-            <!-- 테마 토글 버튼 -->
-            <button class="btn-theme" onclick="toggleTheme()" title="테마 변경">
-              <span class="theme-icon">🌙</span>
-            </button>
+    <!-- 왼쪽 사이드바 토글 버튼 -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="메뉴">
+      <span class="toggle-icon">☰</span>
+    </button>
+
+    <!-- 왼쪽 슬라이드 사이드바 -->
+    <div id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">메뉴</span>
+        <button class="sidebar-close" onclick="toggleSidebar()">×</button>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- 상단 영역 (나중에 기능 추가용) -->
+        <div class="sidebar-section">
+          <div class="sidebar-placeholder">
+            <span class="placeholder-icon">📌</span>
+            <span class="placeholder-text">즐겨찾기</span>
+          </div>
+          <div class="sidebar-placeholder">
+            <span class="placeholder-icon">📊</span>
+            <span class="placeholder-text">통계</span>
+          </div>
+          <div class="sidebar-placeholder">
+            <span class="placeholder-icon">🕐</span>
+            <span class="placeholder-text">최근 본 작품</span>
           </div>
         </div>
 
-        <div class="tab-bar">
-          <div class="tab-group">
-            <button class="tab-btn active" onclick="switchTab('all')">📚 ALL</button>
-            <button class="tab-btn" onclick="switchTab('Novel')">📖 NOVEL</button>
-            <button class="tab-btn" onclick="switchTab('Webtoon')">🎨 WEBTOON</button>
-            <button class="tab-btn" onclick="switchTab('Manga')">📕 COMIC</button>
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-placeholder">
+            <span class="placeholder-icon">📁</span>
+            <span class="placeholder-text">폴더 관리</span>
           </div>
-          <div class="tab-tools">
-            <button class="tab-btn btn-settings" onclick="toggleSettings()" title="사이트 설정">⚙️</button>
-            <button class="tab-btn btn-refresh" id="refreshBtn" onclick="refreshDB(null, false, true)" title="새로고침 (캐시 재구축)">↻</button>
+          <div class="sidebar-placeholder">
+            <span class="placeholder-icon">🏷️</span>
+            <span class="placeholder-text">태그 관리</span>
+          </div>
+          <div class="sidebar-placeholder">
+            <span class="placeholder-icon">💾</span>
+            <span class="placeholder-text">백업/복원</span>
           </div>
         </div>
 
-        <div
-          id="domainPanel"
-          class="settings-panel"
-          style="display: none;"
-        >
-          <div class="settings-section">
-            <h3 class="settings-title">🔗 바로가기 도메인 (번호)</h3>
-            <div class="config-grid-3">
-              <div class="config-item">
-                <label class="config-label">마나토끼</label>
-                <input
-                  type="text"
-                  id="url_manatoki"
-                  class="config-input"
-                  placeholder="469"
-                />
-              </div>
-              <div class="config-item">
-                <label class="config-label">뉴토끼</label>
-                <input
-                  type="text"
-                  id="url_newtoki"
-                  class="config-input"
-                  placeholder="469"
-                />
-              </div>
-              <div class="config-item">
-                <label class="config-label">북토끼</label>
-                <input
-                  type="text"
-                  id="url_booktoki"
-                  class="config-input"
-                  placeholder="469"
-                />
-              </div>
+        <div class="sidebar-divider"></div>
+
+        <!-- 설정 영역 -->
+        <div class="sidebar-section settings-section">
+          <h3 class="section-title">⚙️ 설정</h3>
+          
+          <div class="settings-group">
+            <h4 class="group-title">🔗 바로가기 도메인</h4>
+            <div class="input-row">
+              <label>마나토끼</label>
+              <input type="text" id="url_manatoki" class="config-input" placeholder="469" />
+            </div>
+            <div class="input-row">
+              <label>뉴토끼</label>
+              <input type="text" id="url_newtoki" class="config-input" placeholder="469" />
+            </div>
+            <div class="input-row">
+              <label>북토끼</label>
+              <input type="text" id="url_booktoki" class="config-input" placeholder="469" />
             </div>
           </div>
 
-          <div class="settings-section">
-            <h3 class="settings-title">☁️ 서버 연결 설정</h3>
-            <div class="config-group">
-              <label class="config-label">Folder ID</label>
-              <input
-                type="text"
-                id="setting_folderId"
-                class="config-input"
-                placeholder="Google Drive Folder ID"
-              />
+          <div class="settings-group">
+            <h4 class="group-title">☁️ 서버 연결</h4>
+            <div class="input-row">
+              <label>Folder ID</label>
+              <input type="text" id="setting_folderId" class="config-input" placeholder="Google Drive Folder ID" />
             </div>
-            <div class="config-group">
-              <label class="config-label">GAS Deployment ID</label>
-              <input
-                type="text"
-                id="setting_deployId"
-                class="config-input"
-                placeholder="AKfycb..."
-              />
+            <div class="input-row">
+              <label>GAS Deploy ID</label>
+              <input type="text" id="setting_deployId" class="config-input" placeholder="AKfycb..." />
             </div>
-            <div class="config-group">
-              <label class="config-label">API Key (보안)</label>
-              <input
-                type="password"
-                id="setting_apiKey"
-                class="config-input"
-                placeholder="API Key"
-              />
-              <small class="config-hint">UserScript 사용 시 자동 설정</small>
+            <div class="input-row">
+              <label>API Key</label>
+              <input type="password" id="setting_apiKey" class="config-input" placeholder="API Key" />
+              <small class="input-hint">UserScript 사용 시 자동 설정</small>
             </div>
           </div>
 
-          <div class="settings-section">
-            <h3 class="settings-title">👁️ 뷰어 기본 설정</h3>
-            <div class="config-check-group">
+          <div class="settings-group">
+            <h4 class="group-title">👁️ 뷰어 설정</h4>
+            <div class="checkbox-row">
               <label class="checkbox-label">
                 <input type="checkbox" id="pref_2page" />
                 <span>2쪽 보기</span>
@@ -132,37 +115,56 @@
             </div>
           </div>
 
-          <div class="config-group" style="display: none;">
-            <label class="config-label">소설 뷰어 엔진</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="view_engine" value="foliate" />
-                <span>Foliate (권장)</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="view_engine" value="legacy" checked />
-                <span>Legacy (텍스트)</span>
-              </label>
-            </div>
-          </div>
+          <button class="btn btn-save" onclick="saveActiveSettings()">
+            💾 저장
+          </button>
 
-          <div class="settings-footer">
-            <button class="btn btn-save" onclick="saveActiveSettings()">
-              💾 전체 저장
-            </button>
-          </div>
           <div id="viewerVersionDisplay" class="version-info">
             Version: Loading...
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 사이드바 오버레이 -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 메인 앱 -->
+    <div class="app-container">
+      <header>
+        <div class="header-top">
+          <h1 onclick="location.reload()">📚 My Library</h1>
+        </div>
+
+        <div class="header-controls">
+          <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="search"
+              class="search-box"
+              placeholder="작품 검색..."
+              onkeyup="filterData()"
+            />
+          </div>
+          <button class="btn-theme" onclick="toggleTheme()" title="테마 변경">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </div>
+
+        <nav class="tab-nav">
+          <button class="tab-link active" onclick="switchTab('all')">All</button>
+          <button class="tab-link" onclick="switchTab('Novel')">Novel</button>
+          <button class="tab-link" onclick="switchTab('Webtoon')">Webtoon</button>
+          <button class="tab-link" onclick="switchTab('Manga')">Comic</button>
+        </nav>
       </header>
 
       <main class="main-content">
         <div class="grid-container" id="grid"></div>
       </main>
     </div>
-
-    <!-- 1. Config Modal (First Run) -->
+        <!-- 1. Config Modal (First Run) -->
     <div id="configModal" class="modal-overlay">
       <div class="modal">
         <div class="modal-header">
@@ -199,7 +201,7 @@
               class="config-input"
               placeholder="API Key (선택사항)"
             />
-            <small class="config-hint">UserScript 사용 시 자동으로 주입됩니다.</small>
+            <small class="input-hint">UserScript 사용 시 자동으로 주입됩니다.</small>
           </div>
           <button class="btn btn-save" onclick="saveManualConfig()">
             설정 저장
@@ -216,7 +218,6 @@
           <button class="modal-close" onclick="closeEditModal()">×</button>
         </div>
         <div class="modal-body">
-          <!-- 커버 이미지 -->
           <div class="edit-cover-section">
             <div class="edit-cover-preview">
               <img id="editCoverPreview" src="" alt="커버">
@@ -229,7 +230,6 @@
             </div>
           </div>
 
-          <!-- 편집 폼 -->
           <div class="edit-form">
             <div class="edit-field">
               <label>제목</label>
@@ -275,11 +275,9 @@
             </div>
           </div>
 
-          <!-- 숨김 필드 (데이터 유지용) -->
           <input type="hidden" id="editSourceId">
           <input type="hidden" id="editUrl">
 
-          <!-- 버튼 -->
           <div class="edit-buttons">
             <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
             <button class="btn edit-btn-save" onclick="saveEditInfo()">💾 저장</button>
@@ -303,19 +301,11 @@
 
     <!-- 3. Viewer Overlay -->
     <div id="viewerOverlay" class="viewer-overlay">
-      <div
-        class="viewer-content"
-        id="viewerContent"
-        onclick="handleViewerClick(event)"
-      >
+      <div class="viewer-content" id="viewerContent" onclick="handleViewerClick(event)">
         <div class="nav-zone nav-prev"></div>
         <div class="nav-zone nav-next"></div>
         <div id="viewerImageContainer" class="viewer-image-container"></div>
-        <div
-          id="viewerScrollContainer"
-          class="viewer-scroll-container"
-          style="display: none"
-        ></div>
+        <div id="viewerScrollContainer" class="viewer-scroll-container" style="display: none"></div>
         <div id="pageCounter" class="page-counter">- / -</div>
       </div>
 
@@ -327,13 +317,7 @@
 
         <div class="viewer-footer">
           <div class="footer-row main-row">
-            <button
-              class="btn-icon"
-              onclick="openEpisodeListFromViewer()"
-              title="목차"
-            >
-              📑
-            </button>
+            <button class="btn-icon" onclick="openEpisodeListFromViewer()" title="목차">📑</button>
 
             <div class="slider-container">
               <span id="sliderCurrent" class="slider-label">1</span>
@@ -357,50 +341,14 @@
           </div>
 
           <div class="footer-row settings-row">
-            <button
-              id="btnTwoPage"
-              class="btn-toggle image-only"
-              onclick="toggleViewMode()"
-            >
-              2쪽 보기
-            </button>
-            <button
-              id="btnCover"
-              class="btn-toggle image-only"
-              onclick="toggleCoverMode()"
-            >
-              표지 먼저
-            </button>
-            <button
-              id="btnScroll"
-              class="btn-toggle"
-              onclick="toggleScrollMode()"
-            >
-              스크롤 보기
-            </button>
-            <button
-              id="btnRtl"
-              class="btn-toggle image-only"
-              onclick="toggleRtlMode()"
-            >
-              일본어(우좌)
-            </button>
-
-            <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">
-              글자 -
-            </button>
-            <button class="btn-toggle epub-only" onclick="changeFontSize(2)">
-              글자 +
-            </button>
-
+            <button id="btnTwoPage" class="btn-toggle image-only" onclick="toggleViewMode()">2쪽 보기</button>
+            <button id="btnCover" class="btn-toggle image-only" onclick="toggleCoverMode()">표지 먼저</button>
+            <button id="btnScroll" class="btn-toggle" onclick="toggleScrollMode()">스크롤 보기</button>
+            <button id="btnRtl" class="btn-toggle image-only" onclick="toggleRtlMode()">일본어(우좌)</button>
+            <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">글자 -</button>
+            <button class="btn-toggle epub-only" onclick="changeFontSize(2)">글자 +</button>
             <div class="divider"></div>
-            <button
-              id="btnPreload"
-              class="btn-toggle"
-              onclick="togglePreloadMode()"
-            >
-              미리 등
-            </button>
+            <button id="btnPreload" class="btn-toggle" onclick="togglePreloadMode()">미리 등</button>
           </div>
         </div>
       </div>
@@ -412,7 +360,7 @@
       <div class="loader-text">데이터 불러오는 중...</div>
     </div>
 
-    <!-- 테마 토글 스크립트 -->
+    <!-- Scripts -->
     <script>
       // 테마 초기화
       (function() {
@@ -436,6 +384,25 @@
           icon.textContent = theme === 'dark' ? '🌙' : '☀️';
         }
       }
+
+      // 사이드바 토글
+      function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggleBtn = document.querySelector('.sidebar-toggle');
+        
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+        toggleBtn.classList.toggle('hidden');
+      }
+
+      // 탭 전환 시 active 클래스 관리
+      const originalSwitchTab = window.switchTab;
+      window.switchTab = function(tab) {
+        document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        if (originalSwitchTab) originalSwitchTab(tab);
+      };
     </script>
 
     <script type="module" src="js/include.js?v=3.3.4"></script>
