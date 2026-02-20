@@ -1,328 +1,537 @@
-<!DOCTYPE html>
-<html lang="ko" data-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚 My Bookshelf</title>
-    
-    <!-- DaisyUI + Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .book-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .book-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        
-        .book-cover {
-            aspect-ratio: 2/3;
-            object-fit: cover;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .loading-skeleton {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
-</head>
-<body class="bg-base-100 min-h-screen">
-    
-    <!-- Navigation -->
-    <div class="navbar bg-base-100 shadow-sm border-b border-base-200 sticky top-0 z-50 backdrop-blur-lg bg-base-100/80">
-        <div class="container mx-auto px-4">
-            <div class="flex-1">
-                <a class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    📚 My Bookshelf
-                </a>
-            </div>
-            <div class="flex-none gap-2">
-                <!-- 통계 -->
-                <div class="hidden sm:flex items-center gap-4 mr-4">
-                    <div class="text-sm">
-                        <span class="text-base-content/60">전체</span>
-                        <span id="total-books" class="font-bold text-primary ml-1">0</span>
-                    </div>
-                    <div class="text-sm">
-                        <span class="text-base-content/60">읽음</span>
-                        <span id="read-books" class="font-bold text-success ml-1">0</span>
-                    </div>
-                </div>
-                
-                <!-- 다크모드 토글 -->
-                <label class="swap swap-rotate">
-                    <input type="checkbox" id="theme-toggle"/>
-                    <svg class="swap-on fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>
-                    <svg class="swap-off fill-current w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>
-                </label>
-            </div>
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⭐ My Library ⭐</title>
+    <link rel="stylesheet" href="css/style.css?v=1.0.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/bridge.js"></script>
+    <script src="js/api_client.js"></script>
+    <script src="js/main.js"></script>
+    <link rel="icon" href="data:,">
+  </head>
+  <body>
+    <div class="app-container">
+      <header>
+        <div class="header-top">
+          <h1 onclick="location.reload()">My Library</h1>
+          <div class="controls">
+            <input
+              type="text"
+              id="search"
+              class="search-box"
+              placeholder="🔍작품 검색..."
+              onkeyup="filterData()"
+            />
+          </div>
         </div>
+
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchTab('all')">ALL</button>
+          <button class="tab-btn" onclick="switchTab('Novel')">NOVEL</button>
+          <button class="tab-btn" onclick="switchTab('Webtoon')">WEBTOON</button>
+          <button class="tab-btn" onclick="switchTab('Manga')">COMIC</button>
+          <button class="tab-btn" onclick="toggleSettings()" title="사이트 설정">⚙️</button>
+          <button class="tab-btn btn-refresh" id="refreshBtn" onclick="refreshDB(null, false, true)" title="새로고침 (캐시 재구축)">↻</button>
+        </div>
+
+        <div
+          id="domainPanel"
+          style="
+            display: none;
+            background: #252525;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            color: #ddd;
+          "
+        >
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-size: 14px;
+              border-bottom: 1px solid #444;
+              padding-bottom: 5px;
+            "
+          >
+            🔗 바로가기 도메인 (번호)
+          </h3>
+          <div
+            class="config-grid"
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              gap: 10px;
+              margin-bottom: 15px;
+            "
+          >
+            <div>
+              <label style="font-size: 11px; color: #aaa">마나토끼</label>
+              <input
+                type="text"
+                id="url_manatoki"
+                class="config-input"
+                placeholder="469"
+                style="text-align: center"
+              />
+            </div>
+            <div>
+              <label style="font-size: 11px; color: #aaa">뉴토끼</label>
+              <input
+                type="text"
+                id="url_newtoki"
+                class="config-input"
+                placeholder="469"
+                style="text-align: center"
+              />
+            </div>
+            <div>
+              <label style="font-size: 11px; color: #aaa">북토끼</label>
+              <input
+                type="text"
+                id="url_booktoki"
+                class="config-input"
+                placeholder="469"
+                style="text-align: center"
+              />
+            </div>
+          </div>
+
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-size: 14px;
+              border-bottom: 1px solid #444;
+              padding-bottom: 5px;
+            "
+          >
+            ☁️ 서버 연결 설정
+          </h3>
+          <div class="config-group" style="margin-bottom: 15px">
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 3px;
+              "
+              >Folder ID</label
+            >
+            <input
+              type="text"
+              id="setting_folderId"
+              class="config-input"
+              placeholder="Google Drive Folder ID"
+            />
+          </div>
+          <div class="config-group" style="margin-bottom: 15px">
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 3px;
+              "
+              >GAS Deployment ID</label
+            >
+            <input
+              type="text"
+              id="setting_deployId"
+              class="config-input"
+              placeholder="AKfycb..."
+            />
+          </div>
+          <div class="config-group" style="margin-bottom: 15px">
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 3px;
+              "
+              >API Key (보안)</label
+            >
+            <input
+              type="password"
+              id="setting_apiKey"
+              class="config-input"
+              placeholder="API Key"
+            />
+            <small
+              style="
+                color: #555;
+                font-size: 10px;
+                display: block;
+                margin-top: 3px;
+              "
+            >
+              UserScript 사용 시 자동 설정
+            </small>
+          </div>
+
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-size: 14px;
+              border-bottom: 1px solid #444;
+              padding-bottom: 5px;
+            "
+          >
+            👁️ 뷰어 기본 설정
+          </h3>
+          <div
+            class="config-check-group"
+            style="display: flex; gap: 15px; margin-bottom: 15px"
+          >
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                font-size: 12px;
+              "
+            >
+              <input type="checkbox" id="pref_2page" /> 2쪽 보기
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                font-size: 12px;
+              "
+            >
+              <input type="checkbox" id="pref_cover" /> 표지 우선
+            </label>
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                font-size: 12px;
+              "
+            >
+              <input type="checkbox" id="pref_rtl" /> 일본만화(우좌)
+            </label>
+          </div>
+
+          <div
+            class="config-group"
+            style="
+              margin-bottom: 15px;
+              border-top: 1px solid #333;
+              padding-top: 10px;
+              display: none;
+            "
+          >
+            <label
+              style="
+                font-size: 11px;
+                color: #aaa;
+                display: block;
+                margin-bottom: 5px;
+              "
+              >소설 뷰어 엔진</label
+            >
+            <div style="display: flex; gap: 15px; color: #ccc; font-size: 13px">
+              <label style="cursor: pointer"
+                ><input type="radio" name="view_engine" value="foliate" />
+                Foliate (권장)</label
+              >
+              <label style="cursor: pointer"
+                ><input
+                  type="radio"
+                  name="view_engine"
+                  value="legacy"
+                  checked
+                />
+                Legacy (텍스트)</label
+              >
+            </div>
+          </div>
+
+          <div class="config-group" style="text-align: right">
+            <button class="btn btn-save" onclick="saveActiveSettings()">
+              전체 저장
+            </button>
+          </div>
+          <div
+            id="viewerVersionDisplay"
+            style="
+              margin-top: 10px;
+              font-size: 11px;
+              color: #555;
+              text-align: center;
+            "
+          >
+            Version: Loading...
+          </div>
+        </div>
+      </header>
+
+      <div class="grid-container" id="grid"></div>
     </div>
 
-    <!-- Search & Filter -->
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-3xl mx-auto mb-8">
-            <!-- 검색창 -->
-            <div class="form-control mb-4">
-                <div class="input-group">
-                    <input 
-                        type="text" 
-                        id="search-input" 
-                        placeholder="책 제목, 저자, ISBN 검색..." 
-                        class="input input-bordered w-full focus:outline-offset-0"
-                    />
-                    <button class="btn btn-square btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- 필터 버튼 -->
-            <div class="flex gap-2 flex-wrap justify-center">
-                <button class="btn btn-sm btn-primary filter-btn" data-filter="all">전체</button>
-                <button class="btn btn-sm btn-ghost filter-btn" data-filter="읽음">✅ 읽음</button>
-                <button class="btn btn-sm btn-ghost filter-btn" data-filter="읽는중">📖 읽는중</button>
-                <button class="btn btn-sm btn-ghost filter-btn" data-filter="읽고싶음">💭 읽고싶음</button>
-            </div>
+    <!-- 1. Config Modal (First Run) -->
+    <div id="configModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">⚙️ 서버 연결 설정</div>
         </div>
-
-        <!-- Loading State -->
-        <div id="loading-state" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            <!-- 로딩 스켈레톤 -->
-            <div class="loading-skeleton">
-                <div class="card bg-base-200">
-                    <div class="h-64 bg-base-300 rounded-t-2xl"></div>
-                    <div class="card-body p-4">
-                        <div class="h-4 bg-base-300 rounded w-3/4"></div>
-                        <div class="h-3 bg-base-300 rounded w-1/2 mt-2"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="loading-skeleton hidden md:block">
-                <div class="card bg-base-200">
-                    <div class="h-64 bg-base-300 rounded-t-2xl"></div>
-                    <div class="card-body p-4">
-                        <div class="h-4 bg-base-300 rounded w-3/4"></div>
-                        <div class="h-3 bg-base-300 rounded w-1/2 mt-2"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="loading-skeleton hidden lg:block">
-                <div class="card bg-base-200">
-                    <div class="h-64 bg-base-300 rounded-t-2xl"></div>
-                    <div class="card-body p-4">
-                        <div class="h-4 bg-base-300 rounded w-3/4"></div>
-                        <div class="h-3 bg-base-300 rounded w-1/2 mt-2"></div>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-body" style="text-align: center">
+          <p style="color: #aaa; font-size: 14px; margin-bottom: 20px">
+            Google Apps Script 배포 URL과 폴더 ID를 입력하세요.<br />
+            (PC에서 Tampermonkey 스크립트 실행 시 자동 설정됩니다.)
+          </p>
+          <div class="config-group">
+            <label class="config-label">GAS 웹 앱 URL</label>
+            <input
+              type="text"
+              id="configApiUrl"
+              class="config-input"
+              placeholder="https://script.google.com/macros/s/.../exec"
+            />
+          </div>
+          <div class="config-group">
+            <label class="config-label">루트 폴더 ID</label>
+            <input
+              type="text"
+              id="configFolderId"
+              class="config-input"
+              placeholder="Google Drive Folder ID"
+            />
+          </div>
+          <div class="config-group">
+            <label class="config-label">API Key (보안)</label>
+            <input
+              type="password"
+              id="configApiKey"
+              class="config-input"
+              placeholder="API Key (선택사항)"
+            />
+            <small
+              style="
+                color: #777;
+                font-size: 11px;
+                display: block;
+                margin-top: 5px;
+              "
+            >
+              UserScript 사용 시 자동으로 주입됩니다.
+            </small>
+          </div>
+          <button class="btn btn-save" onclick="saveManualConfig()">
+            설정 저장
+          </button>
         </div>
-
-        <!-- Books Grid -->
-        <div id="books-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 hidden">
-            <!-- 책 카드들이 여기에 들어감 -->
-        </div>
-        
-        <!-- Empty State -->
-        <div id="empty-state" class="text-center py-20 hidden">
-            <div class="text-6xl mb-4">📚</div>
-            <p class="text-xl font-semibold text-base-content/70">검색 결과가 없습니다</p>
-            <p class="text-sm text-base-content/50 mt-2">다른 검색어를 시도해보세요</p>
-        </div>
-
-        <!-- Error State -->
-        <div id="error-state" class="text-center py-20 hidden">
-            <div class="text-6xl mb-4">⚠️</div>
-            <p class="text-xl font-semibold text-error">데이터를 불러오는데 실패했습니다</p>
-            <button onclick="location.reload()" class="btn btn-primary mt-4">다시 시도</button>
-        </div>
+      </div>
     </div>
 
-    <!-- Google Sheets API Script -->
-    <script>
-        const API_KEY = 'AIzaSyDcMTlaJe-b9YsOlrXwCWsyM5V1NaZuXJE';
-        const SPREADSHEET_ID = '1BfRm-O_5-Vn0vMI3yXZQKPLa0pJ0tTQO8vXCmyJz9kI';
-        const RANGE = 'Books!A2:F';
+<!-- Edit Info Modal -->
+<div id="editModal" class="modal-overlay">
+  <div class="modal edit-modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ 작품 정보 편집</div>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- 커버 이미지 -->
+      <div class="edit-cover-section">
+        <div class="edit-cover-preview">
+          <img id="editCoverPreview" src="" alt="커버">
+          <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
+        </div>
+        <div class="edit-cover-actions">
+          <label class="btn btn-upload" for="editCoverFile">📷 커버 업로드</label>
+          <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
+          <div class="edit-cover-filename" id="editCoverFilename"></div>
+        </div>
+      </div>
 
-        let allBooks = [];
-        let currentFilter = 'all';
+      <!-- 편집 폼 -->
+      <div class="edit-form">
+        <div class="edit-field">
+          <label>제목</label>
+          <input type="text" id="editTitle" placeholder="작품 제목">
+        </div>
+        <div class="edit-field">
+          <label>작가</label>
+          <input type="text" id="editAuthor" placeholder="작가명 (여러명: 쉼표 구분)">
+        </div>
+        <div class="edit-field">
+          <label>연재상태</label>
+          <select id="editStatus">
+            <option value="Unknown">알수없음</option>
+            <option value="연재중">연재중</option>
+            <option value="완결">완결</option>
+            <option value="휴재">휴재</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>플랫폼</label>
+          <select id="editPublisher">
+            <option value="">미지정</option>
+            <option value="네이버">네이버</option>
+            <option value="카카오">카카오</option>
+            <option value="문피아">문피아</option>
+            <option value="조아라">조아라</option>
+            <option value="리디">리디</option>
+            <option value="노벨피아">노벨피아</option>
+            <option value="레진코믹스">레진코믹스</option>
+            <option value="탑툰">탑툰</option>
+            <option value="봄툰">봄툰</option>
+            <option value="일본만화">일본만화</option>
+            <option value="기타플랫폼">기타플랫폼</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>카테고리</label>
+          <select id="editCategory">
+            <option value="Manga">만화 (Manga)</option>
+            <option value="Webtoon">웹툰 (Webtoon)</option>
+            <option value="Novel">소설 (Novel)</option>
+          </select>
+        </div>
+      </div>
 
-        // Google Sheets에서 데이터 가져오기
-        async function loadBooksFromSheet() {
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.values) {
-                    allBooks = data.values.map(row => ({
-                        title: row[0] || '제목 없음',
-                        author: row[1] || '저자 미상',
-                        isbn: row[2] || '',
-                        cover: row[3] || 'https://via.placeholder.com/300x450?text=No+Cover',
-                        status: row[4] || '읽고싶음',
-                        rating: parseInt(row[5]) || 0
-                    }));
-                    
-                    document.getElementById('loading-state').classList.add('hidden');
-                    document.getElementById('books-container').classList.remove('hidden');
-                    renderBooks(allBooks);
-                } else {
-                    showError();
-                }
-            } catch (error) {
-                console.error('Error loading books:', error);
-                showError();
-            }
-        }
+      <!-- 숨김 필드 (데이터 유지용) -->
+      <input type="hidden" id="editSourceId">
+      <input type="hidden" id="editUrl">
 
-        // 책 카드 생성
-        function createBookCard(book) {
-            const statusConfig = {
-                '읽음': { color: 'badge-success', icon: '✅' },
-                '읽는중': { color: 'badge-warning', icon: '📖' },
-                '읽고싶음': { color: 'badge-info', icon: '💭' }
-            };
-            
-            const config = statusConfig[book.status] || statusConfig['읽고싶음'];
-            const stars = book.rating > 0 ? '⭐'.repeat(book.rating) : '';
-            
-            return `
-                <div class="book-card card bg-base-100 shadow-lg" data-status="${book.status}">
-                    <figure class="px-3 pt-3">
-                        <img 
-                            src="${book.cover}" 
-                            alt="${book.title}" 
-                            class="rounded-xl book-cover w-full object-cover"
-                            onerror="this.src='https://via.placeholder.com/300x450?text=No+Cover'"
-                        />
-                    </figure>
-                    <div class="card-body p-4">
-                        <h2 class="card-title text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
-                            ${book.title}
-                        </h2>
-                        <p class="text-xs text-base-content/70 line-clamp-1">${book.author}</p>
-                        <div class="flex items-center justify-between mt-2">
-                            <span class="badge ${config.color} badge-sm gap-1">
-                                ${config.icon} ${book.status}
-                            </span>
-                            ${stars ? `<span class="text-xs">${stars}</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+      <!-- 버튼 -->
+      <div class="edit-buttons">
+        <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
+        <button class="btn edit-btn-save" onclick="saveEditInfo()">💾 저장</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        // 책 렌더링
-        function renderBooks(books) {
-            const container = document.getElementById('books-container');
-            const emptyState = document.getElementById('empty-state');
-            
-            if (books.length === 0) {
-                container.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            } else {
-                container.innerHTML = books.map(createBookCard).join('');
-                container.classList.remove('hidden');
-                emptyState.classList.add('hidden');
-            }
-            
-            updateStats(books);
-        }
+    <!-- 2. Episode Modal -->
+    <div id="episodeModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">📄 회차 목록</div>
+          <button class="modal-close" onclick="closeEpisodeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div id="episodeList" class="episode-list"></div>
+        </div>
+      </div>
+    </div>
 
-        // 검색 기능
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            let filtered = allBooks.filter(book => 
-                book.title.toLowerCase().includes(searchTerm) || 
-                book.author.toLowerCase().includes(searchTerm) ||
-                book.isbn.toLowerCase().includes(searchTerm)
-            );
-            
-            if (currentFilter !== 'all') {
-                filtered = filtered.filter(book => book.status === currentFilter);
-            }
-            
-            renderBooks(filtered);
-        });
+    <!-- 3. Viewer Overlay -->
+    <div id="viewerOverlay" class="viewer-overlay">
+      <div
+        class="viewer-content"
+        id="viewerContent"
+        onclick="handleViewerClick(event)"
+      >
+        <div class="nav-zone nav-prev"></div>
+        <div class="nav-zone nav-next"></div>
+        <div id="viewerImageContainer" class="viewer-image-container"></div>
+        <div
+          id="viewerScrollContainer"
+          class="viewer-scroll-container"
+          style="display: none"
+        ></div>
+        <div id="pageCounter" class="page-counter">- / -</div>
+      </div>
 
-        // 필터 기능
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => {
-                    b.classList.remove('btn-primary');
-                    b.classList.add('btn-ghost');
-                });
-                e.target.classList.add('btn-primary');
-                e.target.classList.remove('btn-ghost');
-                
-                currentFilter = e.target.dataset.filter;
-                const searchTerm = document.getElementById('search-input').value.toLowerCase();
-                
-                let filtered = allBooks;
-                
-                if (searchTerm) {
-                    filtered = filtered.filter(book => 
-                        book.title.toLowerCase().includes(searchTerm) || 
-                        book.author.toLowerCase().includes(searchTerm) ||
-                        book.isbn.toLowerCase().includes(searchTerm)
-                    );
-                }
-                
-                if (currentFilter !== 'all') {
-                    filtered = filtered.filter(book => book.status === currentFilter);
-                }
-                
-                renderBooks(filtered);
-            });
-        });
+      <div id="viewerControls" class="viewer-controls">
+        <div class="viewer-header">
+          <span class="viewer-title" id="viewerTitle">TokiViewer</span>
+          <button class="btn-icon close-btn" onclick="closeViewer()">×</button>
+        </div>
 
-        // 다크모드 토글
-        const themeToggle = document.getElementById('theme-toggle');
-        themeToggle.addEventListener('change', () => {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
+        <div class="viewer-footer">
+          <div class="footer-row main-row">
+            <button
+              class="btn-icon"
+              onclick="openEpisodeListFromViewer()"
+              title="목차"
+            >
+              📑
+            </button>
 
-        // 저장된 테마 불러오기
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        if (savedTheme === 'dark') themeToggle.checked = true;
+            <div class="slider-container">
+              <span id="sliderCurrent" class="slider-label">1</span>
+              <input
+                type="range"
+                id="pageSlider"
+                min="1"
+                max="100"
+                value="1"
+                step="1"
+                oninput="onSliderInput(this.value)"
+                onchange="onSliderChange(this.value)"
+              />
+              <span id="sliderTotal" class="slider-label">100</span>
+            </div>
 
-        // 통계 업데이트
-        function updateStats(books = allBooks) {
-            document.getElementById('total-books').textContent = allBooks.length;
-            document.getElementById('read-books').textContent = allBooks.filter(b => b.status === '읽음').length;
-        }
+            <div class="nav-buttons">
+              <button class="btn-icon" onclick="navigateViewer(-1)">◀</button>
+              <button class="btn-icon" onclick="navigateViewer(1)">▶</button>
+            </div>
+          </div>
 
-        // 에러 표시
-        function showError() {
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('error-state').classList.remove('hidden');
-        }
+          <div class="footer-row settings-row">
+            <button
+              id="btnTwoPage"
+              class="btn-toggle image-only"
+              onclick="toggleViewMode()"
+            >
+              2쪽 보기
+            </button>
+            <button
+              id="btnCover"
+              class="btn-toggle image-only"
+              onclick="toggleCoverMode()"
+            >
+              표지 먼저
+            </button>
+            <button
+              id="btnScroll"
+              class="btn-toggle"
+              onclick="toggleScrollMode()"
+            >
+              스크롤 보기
+            </button>
+            <button
+              id="btnRtl"
+              class="btn-toggle image-only"
+              onclick="toggleRtlMode()"
+            >
+              일본어(우좌)
+            </button>
 
-        // 초기 로드
-        loadBooksFromSheet();
-    </script>
-</body>
+            <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">
+              글자 -
+            </button>
+            <button class="btn-toggle epub-only" onclick="changeFontSize(2)">
+              글자 +
+            </button>
+
+            <div class="divider"></div>
+            <button
+              id="btnPreload"
+              class="btn-toggle"
+              onclick="togglePreloadMode()"
+            >
+              미리 등
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="pageLoader" class="loader-overlay">
+      <div class="spinner"></div>
+      <div style="color: #888">데이터 불러오는 중...</div>
+    </div>
+
+    <script type="module" src="js/include.js?v=3.3.4"></script>
+  </body>
 </html>
