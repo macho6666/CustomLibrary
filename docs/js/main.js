@@ -197,7 +197,13 @@ function renderGrid(seriesList) {
                     </div>
                 </div>
             `;
-            
+
+// ✨ 여기에 카드 클릭 이벤트 추가!
+card.addEventListener('click', function(e) {
+    // overlay 버튼 클릭 시 이벤트 전파 막기
+    if (e.target.closest('.overlay')) return;
+    openDetailModal(allSeries[index]);
+});            
             grid.appendChild(card);
             
             const img = card.querySelector('img.thumb');
