@@ -1,860 +1,528 @@
 <!doctype html>
 <html lang="ko" data-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>⭐ My Library ⭐</title>
-    
-    <!-- Fonts: Pretendard + Inter -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-    
-    <link rel="stylesheet" href="css/style.css?v=2.0.0" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="js/bridge.js"></script>
-    <script src="js/api_client.js"></script>
-    <script src="js/main.js"></script>
-    <link rel="icon" href="data:,">
-  </head>
-  <body>
-    <!-- 왼쪽 사이드바 토글 버튼 -->
-    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Menu">
-      <span class="toggle-icon">☰</span>
-    </button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⭐ My Library ⭐</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="css/style.css?v=2.0.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="js/bridge.js"></script>
+  <script src="js/api_client.js"></script>
+  <script src="js/main.js"></script>
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <button class="sidebar-toggle" onclick="toggleSidebar()" title="Menu">
+    <span class="toggle-icon">☰</span>
+  </button>
 
-    <!-- 왼쪽 슬라이드 사이드바 -->
-    <div id="sidebar" class="sidebar">
-      <div class="sidebar-header">
-        <span class="sidebar-title">Menu</span>
-        <button class="sidebar-close" onclick="toggleSidebar()">×</button>
-      </div>
-
-      <div class="sidebar-content">
-        <!-- 테마 토글 -->
-        <div class="sidebar-item theme-toggle" onclick="toggleTheme()">
-          <span class="item-text">Dark / Light</span>
-          <span class="theme-indicator" id="themeIndicator">🌙</span>
-        </div>
-
-        <div class="sidebar-divider"></div>
-
-        <!-- 카테고리 필터 -->
-        <div class="sidebar-section">
-          <div class="sidebar-item active" data-tab="all" onclick="switchTab('all')">
-            <span class="item-text">All</span>
-          </div>
-          <div class="sidebar-item" data-tab="Novel" onclick="switchTab('Novel')">
-            <span class="item-text">Novel</span>
-          </div>
-          <div class="sidebar-item" data-tab="Webtoon" onclick="switchTab('Webtoon')">
-            <span class="item-text">Webtoon</span>
-          </div>
-          <div class="sidebar-item" data-tab="Manga" onclick="switchTab('Manga')">
-            <span class="item-text">Comic</span>
-          </div>
-        </div>
-
-        <div class="sidebar-divider"></div>
-
-        <!-- 기능 메뉴 -->
-        <div class="sidebar-section">
-          <div class="sidebar-item toggle-item" onclick="toggleAdultFilter()">
-            <span class="item-text">Adult</span>
-            <span class="toggle-switch" id="adultToggle"></span>
-          </div>
-          <div class="sidebar-item" onclick="showFavorites()">
-            <span class="item-text">Favorites</span>
-          </div>
-          <div class="sidebar-item" onclick="showCalendar()">
-            <span class="item-text">Calendar</span>
-          </div>
-          <div class="sidebar-item" onclick="showTags()">
-            <span class="item-text">Tags</span>
-          </div>
-        </div>
-
-        <div class="sidebar-divider"></div>
-
-        <!-- 설정 (아코디언) -->
-        <div class="sidebar-section">
-          <div class="sidebar-item accordion-header" onclick="toggleSettings()">
-            <span class="item-text">Settings</span>
-            <span class="accordion-icon" id="settingsIcon">▼</span>
-          </div>
-          
-          <div class="accordion-content" id="settingsContent">
-            <div class="settings-group">
-              <div class="settings-item" onclick="showBackupRestore()">
-                <span>백업/복원</span>
-              </div>
-            </div>
-
-            <div class="settings-group">
-              <div class="settings-label">바로가기 도메인</div>
-              <div class="input-row">
-                <label>마나토끼</label>
-                <input type="text" id="url_manatoki" class="config-input" placeholder="469" />
-              </div>
-              <div class="input-row">
-                <label>뉴토끼</label>
-                <input type="text" id="url_newtoki" class="config-input" placeholder="469" />
-              </div>
-              <div class="input-row">
-                <label>북토끼</label>
-                <input type="text" id="url_booktoki" class="config-input" placeholder="469" />
-              </div>
-            </div>
-
-            <div class="settings-group">
-              <div class="settings-label">서버 연결</div>
-              <div class="input-row">
-                <label>Folder ID</label>
-                <input type="text" id="setting_folderId" class="config-input" placeholder="Google Drive Folder ID" />
-              </div>
-              <div class="input-row">
-                <label>GAS ID</label>
-                <input type="text" id="setting_deployId" class="config-input" placeholder="AKfycb..." />
-              </div>
-              <div class="input-row">
-                <label>API Key</label>
-                <input type="password" id="setting_apiKey" class="config-input" placeholder="API Key" />
-              </div>
-            </div>
-
-            <div class="settings-group">
-              <div class="settings-label">뷰어 설정</div>
-              <div class="checkbox-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="pref_2page" />
-                  <span>2쪽 보기</span>
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" id="pref_cover" />
-                  <span>표지 우선</span>
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" id="pref_rtl" />
-                  <span>일본만화(우좌)</span>
-                </label>
-              </div>
-            </div>
-
-            <button class="btn btn-save-settings" onclick="saveActiveSettings()">저장</button>
-          </div>
-        </div>
-
-        <div class="sidebar-version" id="viewerVersionDisplay">
-          Version: Loading...
-        </div>
-      </div>
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Menu</span>
+      <button class="sidebar-close" onclick="toggleSidebar()">×</button>
     </div>
 
-    <!-- 사이드바 오버레이 -->
-    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar-content">
+      <div class="sidebar-item theme-toggle" onclick="toggleTheme()">
+        <span class="item-text">Dark / Light</span>
+        <span class="theme-indicator" id="themeIndicator">🌙</span>
+      </div>
 
-    <!-- 메인 앱 -->
-    <div class="app-container">
-      <header>
-        <div class="header-top">
-          <h1 onclick="location.reload()">My Library</h1>
-        </div>
-        <div class="header-controls">
-          <div class="search-wrapper">
-            <input
-              type="text"
-              id="search"
-              class="search-box"
-              placeholder="Search..."
-              onkeyup="filterData()"
-            />
-          </div>
-          <button class="btn-theme-header" onclick="toggleTheme()" title="Theme">
-            <span class="theme-icon" id="headerThemeIcon">🌙</span>
-          </button>
-        </div>
-      </header>
+      <div class="sidebar-divider"></div>
 
-      <!-- 메인 콘텐츠 (카드 그리드 또는 캘린더) -->
-      <main class="main-content">
-        <div class="grid-container" id="grid"></div>
+      <div class="sidebar-section">
+        <div class="sidebar-item active" data-tab="all" onclick="switchTab('all')">
+          <span class="item-text">All</span>
+        </div>
+        <div class="sidebar-item" data-tab="Novel" onclick="switchTab('Novel')">
+          <span class="item-text">Novel</span>
+        </div>
+        <div class="sidebar-item" data-tab="Webtoon" onclick="switchTab('Webtoon')">
+          <span class="item-text">Webtoon</span>
+        </div>
+        <div class="sidebar-item" data-tab="Manga" onclick="switchTab('Manga')">
+          <span class="item-text">Comic</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-item toggle-item" onclick="toggleAdultFilter()">
+          <span class="item-text">Adult</span>
+          <span class="toggle-switch" id="adultToggle"></span>
+        </div>
+        <div class="sidebar-item" onclick="showFavorites()">
+          <span class="item-text">Favorites</span>
+        </div>
+        <div class="sidebar-item" onclick="showCalendar()">
+          <span class="item-text">Calendar</span>
+        </div>
+        <div class="sidebar-item" onclick="showTags()">
+          <span class="item-text">Tags</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-item accordion-header" onclick="toggleSettingsAccordion()">
+          <span class="item-text">Settings</span>
+          <span class="accordion-icon" id="settingsIcon">▼</span>
+        </div>
         
-        <!-- 캘린더 페이지 -->
-        <div class="calendar-page" id="calendarPage" style="display: none;">
-          <div class="calendar-container">
-            <div class="calendar-stats">
-              <div class="stat-item">
-                <span class="stat-value" id="statCompleted">0</span>
-                <span class="stat-label">Completed</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-value" id="statDropped">0</span>
-                <span class="stat-label">Dropped</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-value" id="statReading">0</span>
-                <span class="stat-label">Reading</span>
-              </div>
-            </div>
-            
-            <div class="calendar-wrapper">
-              <div class="calendar-header">
-                <button class="cal-nav" onclick="prevMonth()">◀</button>
-                <span class="cal-title" id="calendarTitle">2025년 1월</span>
-                <button class="cal-nav" onclick="nextMonth()">▶</button>
-              </div>
-              <div class="calendar-grid">
-                <div class="cal-day-header">일</div>
-                <div class="cal-day-header">월</div>
-                <div class="cal-day-header">화</div>
-                <div class="cal-day-header">수</div>
-                <div class="cal-day-header">목</div>
-                <div class="cal-day-header">금</div>
-                <div class="cal-day-header">토</div>
-                <div id="calendarDays"></div>
-              </div>
-            </div>
-            
-            <div class="calendar-records" id="calendarRecords">
-              <div class="records-header">
-                <span class="records-date" id="selectedDate">날짜를 선택하세요</span>
-              </div>
-              <div class="records-list" id="recordsList"></div>
-              <button class="btn btn-add-record" id="btnAddRecord" style="display:none;" onclick="showAddRecordModal()">
-                + 작품 추가
-              </button>
+        <div class="accordion-content" id="settingsContent">
+          <div class="settings-group">
+            <div class="settings-item" onclick="showBackupRestore()">
+              <span>백업/복원</span>
             </div>
           </div>
+
+          <div class="settings-group">
+            <div class="settings-label">바로가기 도메인</div>
+            <div class="input-row">
+              <label>마나토끼</label>
+              <input type="text" id="url_manatoki" class="config-input" placeholder="469" />
+            </div>
+            <div class="input-row">
+              <label>뉴토끼</label>
+              <input type="text" id="url_newtoki" class="config-input" placeholder="469" />
+            </div>
+            <div class="input-row">
+              <label>북토끼</label>
+              <input type="text" id="url_booktoki" class="config-input" placeholder="469" />
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-label">서버 연결</div>
+            <div class="input-row">
+              <label>Folder ID</label>
+              <input type="text" id="setting_folderId" class="config-input" placeholder="Google Drive Folder ID" />
+            </div>
+            <div class="input-row">
+              <label>GAS ID</label>
+              <input type="text" id="setting_deployId" class="config-input" placeholder="AKfycb..." />
+            </div>
+            <div class="input-row">
+              <label>API Key</label>
+              <input type="password" id="setting_apiKey" class="config-input" placeholder="API Key" />
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-label">뷰어 설정</div>
+            <div class="checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="pref_2page" />
+                <span>2쪽 보기</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="pref_cover" />
+                <span>표지 우선</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="pref_rtl" />
+                <span>일본만화(우좌)</span>
+              </label>
+            </div>
+            <div style="display:none;">
+              <input type="radio" name="view_engine" value="foliate" />
+              <input type="radio" name="view_engine" value="legacy" checked />
+            </div>
+          </div>
+
+          <button class="btn btn-save-settings" onclick="saveActiveSettings()">저장</button>
         </div>
-      </main>
+      </div>
     </div>
-        <!-- 상세 보기 팝업 (새로 추가) -->
+    
+    <div class="sidebar-version" id="viewerVersionDisplay">
+      Version: Loading...
+    </div>
+  </div>
+
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <div class="app-container">
+    <header>
+      <div class="header-top">
+        <h1 onclick="location.reload()">My Library</h1>
+      </div>
+      <div class="header-controls">
+        <div class="search-wrapper">
+          <input type="text" id="search" class="search-box" placeholder="Search..." onkeyup="filterData()" />
+        </div>
+        <button class="btn-theme-header" onclick="toggleTheme()" title="Theme">
+          <span class="theme-icon" id="headerThemeIcon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="grid-container" id="grid"></div>
+      
+      <div class="calendar-page" id="calendarPage" style="display: none;">
+        <div class="calendar-container">
+          <div class="calendar-stats">
+            <div class="stat-item">
+              <span class="stat-value" id="statCompleted">0</span>
+              <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="statDropped">0</span>
+              <span class="stat-label">Dropped</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="statReading">0</span>
+              <span class="stat-label">Reading</span>
+            </div>
+          </div>
+          
+          <div class="calendar-wrapper">
+            <div class="calendar-header">
+              <button class="cal-nav" onclick="prevMonth()">◀</button>
+              <span class="cal-title" id="calendarTitle">2025년 1월</span>
+              <button class="cal-nav" onclick="nextMonth()">▶</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+          </div>
+          
+          <div class="calendar-records" id="calendarRecords">
+            <div class="records-header">
+              <span class="records-date" id="selectedDate">날짜를 선택하세요</span>
+            </div>
+            <div class="records-list" id="recordsList"></div>
+            <button class="btn btn-add-record" id="btnAddRecord" style="display:none;" onclick="showAddRecordModal()">+ 작품 추가</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
     <div id="detailModal" class="modal-overlay">
-      <div class="modal detail-modal">
-        <div class="modal-header">
-          <div class="modal-title" id="detailTitle">작품 제목</div>
-          <button class="modal-close" onclick="closeDetailModal()">×</button>
+    <div class="modal detail-modal">
+      <div class="modal-header">
+        <div class="modal-title" id="detailTitle">작품 제목</div>
+        <button class="modal-close" onclick="closeDetailModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-cover-wrapper" onclick="toggleDetailEpisodes()">
+          <img id="detailCover" class="detail-cover" src="" alt="Cover">
+          <div class="detail-cover-no-image" id="detailCoverNoImage">No Image</div>
+          <div class="cover-hint">클릭하여 목록 보기</div>
         </div>
-        <div class="modal-body">
-          <!-- 큰 커버 이미지 -->
-          <div class="detail-cover-wrapper" onclick="toggleEpisodeList()">
-            <img id="detailCover" class="detail-cover" src="" alt="Cover">
-            <div class="cover-hint">클릭하여 회차 목록 보기</div>
+        
+        <div class="detail-episodes" id="detailEpisodes" style="display:none;">
+          <div class="episode-drive-link">
+            <a href="#" id="detailDriveLink" target="_blank">📂 드라이브에서 보기</a>
           </div>
-          
-          <!-- 회차 목록 (펼쳐짐) -->
-          <div class="detail-episodes" id="detailEpisodes" style="display:none;">
-            <div class="episode-drive-link">
-              <a href="#" id="detailDriveLink" target="_blank">📂 드라이브에서 보기</a>
-            </div>
-            <div class="episode-list-wrapper" id="detailEpisodeList"></div>
+          <div class="episode-list-wrapper" id="detailEpisodeList"></div>
+        </div>
+        
+        <div class="detail-info">
+          <div class="info-row">
+            <span class="info-label">제목</span>
+            <span class="info-value" id="detailInfoTitle">-</span>
           </div>
-          
-          <!-- 작품 정보 -->
-          <div class="detail-info">
-            <div class="info-row">
-              <span class="info-label">제목</span>
-              <span class="info-value" id="detailInfoTitle">-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">작가</span>
-              <span class="info-value" id="detailInfoAuthor">-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">상태</span>
-              <span class="info-value" id="detailInfoStatus">-</span>
-            </div>
-            <div class="info-row clickable" onclick="openPlatformSite()">
-              <span class="info-label">플랫폼</span>
-              <span class="info-value info-link" id="detailInfoPlatform">-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">카테고리</span>
-              <span class="info-value" id="detailInfoCategory">-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">회차</span>
-              <span class="info-value" id="detailInfoCount">-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">태그</span>
-              <span class="info-value" id="detailInfoTags">-</span>
-            </div>
+          <div class="info-row">
+            <span class="info-label">작가</span>
+            <span class="info-value" id="detailInfoAuthor">-</span>
           </div>
-          
-          <!-- 버튼 -->
-          <div class="detail-actions">
-            <button class="btn btn-edit-detail" onclick="openEditFromDetail()">Edit</button>
+          <div class="info-row">
+            <span class="info-label">상태</span>
+            <span class="info-value" id="detailInfoStatus">-</span>
           </div>
+          <div class="info-row clickable" onclick="openPlatformSite()">
+            <span class="info-label">플랫폼</span>
+            <span class="info-value info-link" id="detailInfoPlatform">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">카테고리</span>
+            <span class="info-value" id="detailInfoCategory">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">회차</span>
+            <span class="info-value" id="detailInfoCount">-</span>
+          </div>
+        </div>
+        
+        <div class="detail-actions">
+          <button class="btn btn-edit-detail" onclick="openEditFromDetail()">Edit</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- 작품 기록 추가 팝업 (캘린더용) -->
-    <div id="addRecordModal" class="modal-overlay">
-      <div class="modal record-modal">
-        <div class="modal-header">
-          <div class="modal-title">작품 기록 추가</div>
-          <button class="modal-close" onclick="closeAddRecordModal()">×</button>
+  <div id="tagsModal" class="modal-overlay">
+    <div class="modal tags-modal">
+      <div class="modal-header">
+        <div class="modal-title">Tags</div>
+        <button class="modal-close" onclick="closeTagsModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="tags-create">
+          <input type="text" id="newTagInput" class="config-input" placeholder="새 태그 입력...">
+          <button class="btn btn-add-tag" onclick="createTag()">추가</button>
         </div>
-        <div class="modal-body">
-          <div class="record-search">
-            <input type="text" id="recordSearch" class="config-input" placeholder="작품 검색..." oninput="searchWorksForRecord()">
+        <div class="tags-list" id="tagsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="configModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">서버 연결 설정</div>
+      </div>
+      <div class="modal-body" style="text-align: center">
+        <p class="modal-desc">Google Apps Script 배포 URL과 폴더 ID를 입력하세요.</p>
+        <div class="config-group">
+          <label class="config-label">GAS 웹 앱 URL</label>
+          <input type="text" id="configApiUrl" class="config-input" placeholder="https://script.google.com/macros/s/.../exec" />
+        </div>
+        <div class="config-group">
+          <label class="config-label">루트 폴더 ID</label>
+          <input type="text" id="configFolderId" class="config-input" placeholder="Google Drive Folder ID" />
+        </div>
+        <div class="config-group">
+          <label class="config-label">API Key (보안)</label>
+          <input type="password" id="configApiKey" class="config-input" placeholder="API Key (선택사항)" />
+        </div>
+        <button class="btn btn-save" onclick="saveManualConfig()">설정 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal-overlay">
+    <div class="modal edit-modal">
+      <div class="modal-header">
+        <div class="modal-title">작품 정보 편집</div>
+        <button class="modal-close" onclick="closeEditModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="edit-cover-section">
+          <div class="edit-cover-preview">
+            <img id="editCoverPreview" src="" alt="커버">
+            <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
           </div>
-          <div class="record-work-list" id="recordWorkList"></div>
-          
-          <div class="record-form" id="recordForm" style="display:none;">
-            <div class="selected-work" id="selectedWork"></div>
-            
-            <div class="record-field">
-              <label>읽기 상태</label>
-              <div class="status-options">
-                <label class="status-option">
-                  <input type="radio" name="readStatus" value="reading" checked>
-                  <span>읽는 중</span>
-                </label>
-                <label class="status-option">
-                  <input type="radio" name="readStatus" value="completed">
-                  <span>완독</span>
-                </label>
-                <label class="status-option">
-                  <input type="radio" name="readStatus" value="dropped">
-                  <span>포기</span>
-                </label>
-              </div>
-            </div>
-            
-            <div class="record-field">
-              <label>읽은 정도</label>
-              <div class="progress-input">
-                <input type="range" id="progressSlider" min="0" max="100" value="0" oninput="updateProgressValue()">
-                <span class="progress-value" id="progressValue">0%</span>
-              </div>
-            </div>
-            
-            <div class="record-field">
-              <label>코멘트</label>
-              <textarea id="recordComment" class="config-input" placeholder="메모를 남겨보세요..."></textarea>
-            </div>
-            
-            <button class="btn btn-save" onclick="saveRecord()">저장</button>
+          <div class="edit-cover-actions">
+            <label class="btn btn-upload" for="editCoverFile">커버 업로드</label>
+            <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
+            <div class="edit-cover-filename" id="editCoverFilename"></div>
           </div>
+        </div>
+
+        <div class="edit-form">
+          <div class="edit-field">
+            <label>제목</label>
+            <input type="text" id="editTitle" placeholder="작품 제목">
+          </div>
+          <div class="edit-field">
+            <label>작가</label>
+            <input type="text" id="editAuthor" placeholder="작가명">
+          </div>
+          <div class="edit-field">
+            <label>연재상태</label>
+            <select id="editStatus">
+              <option value="Unknown">알수없음</option>
+              <option value="연재중">연재중</option>
+              <option value="완결">완결</option>
+              <option value="휴재">휴재</option>
+            </select>
+          </div>
+          <div class="edit-field">
+            <label>플랫폼</label>
+            <select id="editPublisher">
+              <option value="">미지정</option>
+              <option value="네이버">네이버</option>
+              <option value="카카오">카카오</option>
+              <option value="문피아">문피아</option>
+              <option value="조아라">조아라</option>
+              <option value="리디">리디</option>
+              <option value="노벨피아">노벨피아</option>
+              <option value="레진코믹스">레진코믹스</option>
+              <option value="탑툰">탑툰</option>
+              <option value="봄툰">봄툰</option>
+              <option value="일본만화">일본만화</option>
+              <option value="기타플랫폼">기타플랫폼</option>
+            </select>
+          </div>
+          <div class="edit-field">
+            <label>카테고리</label>
+            <select id="editCategory">
+              <option value="Manga">만화 (Manga)</option>
+              <option value="Webtoon">웹툰 (Webtoon)</option>
+              <option value="Novel">소설 (Novel)</option>
+            </select>
+          </div>
+        </div>
+
+        <input type="hidden" id="editSourceId">
+        <input type="hidden" id="editUrl">
+
+        <div class="edit-buttons">
+          <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
+          <button class="btn edit-btn-save" onclick="saveEditInfo()">저장</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- 태그 관리 팝업 -->
-    <div id="tagsModal" class="modal-overlay">
-      <div class="modal tags-modal">
-        <div class="modal-header">
-          <div class="modal-title">Tags</div>
-          <button class="modal-close" onclick="closeTagsModal()">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="tags-create">
-            <input type="text" id="newTagInput" class="config-input" placeholder="새 태그 입력...">
-            <button class="btn btn-add-tag" onclick="createTag()">추가</button>
+  <div id="episodeModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">회차 목록</div>
+        <button class="modal-close" onclick="closeEpisodeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="episodeList" class="episode-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewerOverlay" class="viewer-overlay">
+    <div class="viewer-content" id="viewerContent" onclick="handleViewerClick(event)">
+      <div class="nav-zone nav-prev"></div>
+      <div class="nav-zone nav-next"></div>
+      <div id="viewerImageContainer" class="viewer-image-container"></div>
+      <div id="viewerScrollContainer" class="viewer-scroll-container" style="display: none"></div>
+      <div id="pageCounter" class="page-counter">- / -</div>
+    </div>
+
+    <div id="viewerControls" class="viewer-controls">
+      <div class="viewer-header">
+        <span class="viewer-title" id="viewerTitle">Viewer</span>
+        <button class="btn-icon close-btn" onclick="closeViewer()">×</button>
+      </div>
+
+      <div class="viewer-footer">
+        <div class="footer-row main-row">
+          <button class="btn-icon" onclick="openEpisodeListFromViewer()" title="목차">📑</button>
+          <div class="slider-container">
+            <span id="sliderCurrent" class="slider-label">1</span>
+            <input type="range" id="pageSlider" min="1" max="100" value="1" step="1" oninput="onSliderInput(this.value)" onchange="onSliderChange(this.value)" />
+            <span id="sliderTotal" class="slider-label">100</span>
           </div>
-          <div class="tags-list" id="tagsList"></div>
+          <div class="nav-buttons">
+            <button class="btn-icon" onclick="navigateViewer(-1)">◀</button>
+            <button class="btn-icon" onclick="navigateViewer(1)">▶</button>
+          </div>
+        </div>
+
+        <div class="footer-row settings-row">
+          <button id="btnTwoPage" class="btn-toggle image-only" onclick="toggleViewMode()">2쪽 보기</button>
+          <button id="btnCover" class="btn-toggle image-only" onclick="toggleCoverMode()">표지 먼저</button>
+          <button id="btnScroll" class="btn-toggle" onclick="toggleScrollMode()">스크롤 보기</button>
+          <button id="btnRtl" class="btn-toggle image-only" onclick="toggleRtlMode()">일본어(우좌)</button>
+          <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">글자 -</button>
+          <button class="btn-toggle epub-only" onclick="changeFontSize(2)">글자 +</button>
+          <div class="divider"></div>
+          <button id="btnPreload" class="btn-toggle" onclick="togglePreloadMode()">미리 등</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- 1. Config Modal (First Run) -->
-    <div id="configModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <div class="modal-title">서버 연결 설정</div>
-        </div>
-        <div class="modal-body" style="text-align: center">
-          <p class="modal-desc">
-            Google Apps Script 배포 URL과 폴더 ID를 입력하세요.<br />
-            (PC에서 Tampermonkey 스크립트 실행 시 자동 설정됩니다.)
-          </p>
-          <div class="config-group">
-            <label class="config-label">GAS 웹 앱 URL</label>
-            <input type="text" id="configApiUrl" class="config-input" placeholder="https://script.google.com/macros/s/.../exec" />
-          </div>
-          <div class="config-group">
-            <label class="config-label">루트 폴더 ID</label>
-            <input type="text" id="configFolderId" class="config-input" placeholder="Google Drive Folder ID" />
-          </div>
-          <div class="config-group">
-            <label class="config-label">API Key (보안)</label>
-            <input type="password" id="configApiKey" class="config-input" placeholder="API Key (선택사항)" />
-            <small class="input-hint">UserScript 사용 시 자동으로 주입됩니다.</small>
-          </div>
-          <button class="btn btn-save" onclick="saveManualConfig()">설정 저장</button>
-        </div>
-      </div>
-    </div>
+  <div id="pageLoader" class="loader-overlay">
+    <div class="spinner"></div>
+    <div class="loader-text">Loading...</div>
+  </div>
 
-    <!-- Edit Info Modal -->
-    <div id="editModal" class="modal-overlay">
-      <div class="modal edit-modal">
-        <div class="modal-header">
-          <div class="modal-title">작품 정보 편집</div>
-          <button class="modal-close" onclick="closeEditModal()">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="edit-cover-section">
-            <div class="edit-cover-preview">
-              <img id="editCoverPreview" src="" alt="커버">
-              <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
-            </div>
-            <div class="edit-cover-actions">
-              <label class="btn btn-upload" for="editCoverFile">커버 업로드</label>
-              <input type="file" id="editCoverFile" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
-              <div class="edit-cover-filename" id="editCoverFilename"></div>
-            </div>
-          </div>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcons(savedTheme);
+    })();
 
-          <div class="edit-form">
-            <div class="edit-field">
-              <label>제목</label>
-              <input type="text" id="editTitle" placeholder="작품 제목">
-            </div>
-            <div class="edit-field">
-              <label>작가</label>
-              <input type="text" id="editAuthor" placeholder="작가명">
-            </div>
-            <div class="edit-field">
-              <label>연재상태</label>
-              <select id="editStatus">
-                <option value="Unknown">알수없음</option>
-                <option value="연재중">연재중</option>
-                <option value="완결">완결</option>
-                <option value="휴재">휴재</option>
-              </select>
-            </div>
-            <div class="edit-field">
-              <label>플랫폼</label>
-              <select id="editPublisher">
-                <option value="">미지정</option>
-                <option value="네이버">네이버</option>
-                <option value="카카오">카카오</option>
-                <option value="문피아">문피아</option>
-                <option value="조아라">조아라</option>
-                <option value="리디">리디</option>
-                <option value="노벨피아">노벨피아</option>
-                <option value="레진코믹스">레진코믹스</option>
-                <option value="탑툰">탑툰</option>
-                <option value="봄툰">봄툰</option>
-                <option value="일본만화">일본만화</option>
-                <option value="기타플랫폼">기타플랫폼</option>
-              </select>
-            </div>
-            <div class="edit-field">
-              <label>카테고리</label>
-              <select id="editCategory">
-                <option value="Manga">만화 (Manga)</option>
-                <option value="Webtoon">웹툰 (Webtoon)</option>
-                <option value="Novel">소설 (Novel)</option>
-              </select>
-            </div>
-            <div class="edit-field">
-              <label>태그</label>
-              <div class="edit-tags" id="editTags"></div>
-            </div>
-          </div>
-
-          <input type="hidden" id="editSourceId">
-          <input type="hidden" id="editUrl">
-
-          <div class="edit-buttons">
-            <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
-            <button class="btn edit-btn-save" onclick="saveEditInfo()">저장</button>
-          </div>
-        </div>
-      </div>
-    </div>
-        <!-- 2. Episode Modal -->
-    <div id="episodeModal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <div class="modal-title">회차 목록</div>
-          <button class="modal-close" onclick="closeEpisodeModal()">×</button>
-        </div>
-        <div class="modal-body">
-          <div id="episodeList" class="episode-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. Viewer Overlay -->
-    <div id="viewerOverlay" class="viewer-overlay">
-      <div class="viewer-content" id="viewerContent" onclick="handleViewerClick(event)">
-        <div class="nav-zone nav-prev"></div>
-        <div class="nav-zone nav-next"></div>
-        <div id="viewerImageContainer" class="viewer-image-container"></div>
-        <div id="viewerScrollContainer" class="viewer-scroll-container" style="display: none"></div>
-        <div id="pageCounter" class="page-counter">- / -</div>
-      </div>
-
-      <div id="viewerControls" class="viewer-controls">
-        <div class="viewer-header">
-          <span class="viewer-title" id="viewerTitle">Viewer</span>
-          <button class="btn-icon close-btn" onclick="closeViewer()">×</button>
-        </div>
-
-        <div class="viewer-footer">
-          <div class="footer-row main-row">
-            <button class="btn-icon" onclick="openEpisodeListFromViewer()" title="목차">📑</button>
-            <div class="slider-container">
-              <span id="sliderCurrent" class="slider-label">1</span>
-              <input type="range" id="pageSlider" min="1" max="100" value="1" step="1" oninput="onSliderInput(this.value)" onchange="onSliderChange(this.value)" />
-              <span id="sliderTotal" class="slider-label">100</span>
-            </div>
-            <div class="nav-buttons">
-              <button class="btn-icon" onclick="navigateViewer(-1)">◀</button>
-              <button class="btn-icon" onclick="navigateViewer(1)">▶</button>
-            </div>
-          </div>
-
-          <div class="footer-row settings-row">
-            <button id="btnTwoPage" class="btn-toggle image-only" onclick="toggleViewMode()">2쪽 보기</button>
-            <button id="btnCover" class="btn-toggle image-only" onclick="toggleCoverMode()">표지 먼저</button>
-            <button id="btnScroll" class="btn-toggle" onclick="toggleScrollMode()">스크롤 보기</button>
-            <button id="btnRtl" class="btn-toggle image-only" onclick="toggleRtlMode()">일본어(우좌)</button>
-            <button class="btn-toggle epub-only" onclick="changeFontSize(-2)">글자 -</button>
-            <button class="btn-toggle epub-only" onclick="changeFontSize(2)">글자 +</button>
-            <div class="divider"></div>
-            <button id="btnPreload" class="btn-toggle" onclick="togglePreloadMode()">미리 등</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loader -->
-    <div id="pageLoader" class="loader-overlay">
-      <div class="spinner"></div>
-      <div class="loader-text">Loading...</div>
-    </div>
-
-    <!-- Scripts -->
-    <script>
-      // 테마 초기화
-      (function() {
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcons(savedTheme);
-      })();
-
-      function toggleTheme() {
-        const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        html.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcons(newTheme);
-      }
-
-      function updateThemeIcons(theme) {
-        const icon = theme === 'dark' ? '🌙' : '☀️';
-        const indicator = document.getElementById('themeIndicator');
-        const headerIcon = document.getElementById('headerThemeIcon');
-        if (indicator) indicator.textContent = icon;
-        if (headerIcon) headerIcon.textContent = icon;
-      }
-
-      // 사이드바 토글
-      function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        const toggle = document.querySelector('.sidebar-toggle');
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('show');
-        toggle.classList.toggle('hidden');
-      }
-
-      // 설정 아코디언
-      function toggleSettings() {
-        const content = document.getElementById('settingsContent');
-        const icon = document.getElementById('settingsIcon');
-        content.classList.toggle('open');
-        icon.textContent = content.classList.contains('open') ? '▲' : '▼';
-      }
-// 상세 모달 열기
-function openDetailModal(series) {
-  const modal = document.getElementById('detailModal');
-  if (!modal) return;
-  
-  const meta = series.metadata || {};
-  const authors = meta.authors || [];
-  
-  // 제목
-  document.getElementById('detailTitle').textContent = series.name || '제목 없음';
-  
-  // 커버 이미지
-  const coverImg = document.getElementById('detailCover');
-  if (series.thumbnailId) {
-    coverImg.src = `https://lh3.googleusercontent.com/d/${series.thumbnailId}=s400`;
-  } else if (series.thumbnail) {
-    coverImg.src = series.thumbnail;
-  } else {
-    coverImg.src = '';
-  }
-  
-  // 정보
-  document.getElementById('detailInfoTitle').textContent = series.name || '-';
-  document.getElementById('detailInfoAuthor').textContent = authors.join(', ') || '-';
-  document.getElementById('detailInfoStatus').textContent = meta.status || '-';
-  document.getElementById('detailInfoPlatform').textContent = meta.publisher || '-';
-  document.getElementById('detailInfoCategory').textContent = series.category || meta.category || '-';
-  document.getElementById('detailInfoCount').textContent = series.count ? series.count + '화' : '-';
-  document.getElementById('detailInfoTags').textContent = series.tags ? series.tags.join(', ') : '-';
-  
-  // 드라이브 링크
-  const driveLink = document.getElementById('detailDriveLink');
-  if (driveLink && series.id) {
-    driveLink.href = `https://drive.google.com/drive/u/0/folders/${series.id}`;
-  }
-  
-  // 회차 목록 숨김
-  document.getElementById('detailEpisodes').style.display = 'none';
-  
-  // 현재 작품 저장
-  window.currentDetailSeries = series;
-  
-  modal.style.display = 'flex';
-}
-
-// 상세 모달 닫기
-function closeDetailModal() {
-  const modal = document.getElementById('detailModal');
-  if (modal) modal.style.display = 'none';
-}
-
-// 회차 목록 토글
-function toggleEpisodeList() {
-  const episodes = document.getElementById('detailEpisodes');
-  const series = window.currentDetailSeries;
-  
-  if (!episodes || !series) return;
-  
-  if (episodes.style.display === 'none') {
-    // 열기
-    episodes.style.display = 'block';
-    loadDetailEpisodes(series.id);
-  } else {
-    // 닫기
-    episodes.style.display = 'none';
-  }
-}
-
-// 회차 목록 로드
-async function loadDetailEpisodes(seriesId) {
-  const listEl = document.getElementById('detailEpisodeList');
-  if (!listEl) return;
-  
-  listEl.innerHTML = '<div style="padding:12px; color:var(--text-tertiary);">로딩 중...</div>';
-  
-  try {
-    let books = await API.request('view_get_books', { seriesId: seriesId });
-    
-    if (!books || books.length === 0) {
-      listEl.innerHTML = '<div style="padding:12px; color:var(--text-tertiary);">회차가 없습니다</div>';
-      return;
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcons(newTheme);
     }
-    
-    listEl.innerHTML = '';
-    books.forEach((book, index) => {
-      const item = document.createElement('div');
-      item.className = 'detail-episode-item';
-      item.textContent = book.name;
-      item.onclick = () => {
-        // 뷰어 열기 (기존 함수 사용)
-        closeDetailModal();
-        if (typeof loadViewer === 'function') {
-          _currentBooks = books;
-          loadViewer(index);
-        }
-      };
-      listEl.appendChild(item);
-    });
-  } catch (e) {
-    listEl.innerHTML = `<div style="padding:12px; color:var(--danger);">오류: ${e.message}</div>`;
-  }
-}
 
-// Edit 모달 열기 (상세에서)
-function openEditFromDetail() {
-  const series = window.currentDetailSeries;
-  if (!series) return;
-  
-  // allSeries에서 인덱스 찾기
-  const index = allSeries.findIndex(s => s.id === series.id);
-  if (index >= 0) {
-    closeDetailModal();
-    openEditModal(index);
-  }
-}
+    function updateThemeIcons(theme) {
+      const icon = theme === 'dark' ? '🌙' : '☀️';
+      const indicator = document.getElementById('themeIndicator');
+      const headerIcon = document.getElementById('headerThemeIcon');
+      if (indicator) indicator.textContent = icon;
+      if (headerIcon) headerIcon.textContent = icon;
+    }
 
-// 플랫폼 사이트 열기
-function openPlatformSite() {
-  const series = window.currentDetailSeries;
-  if (!series) return;
-  
-  const url = getDynamicLink(series);
-  if (url && url !== '#') {
-    window.open(url, '_blank');
-  }
-}
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const toggle = document.querySelector('.sidebar-toggle');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+      toggle.classList.toggle('hidden');
+    }
 
-// 전역 변수
-window.currentDetailSeries = null;
-      // 탭 전환
-      const originalSwitchTab = window.switchTab;
-      window.switchTab = function(tab) {
-        // 사이드바 메뉴 active 업데이트
-        document.querySelectorAll('.sidebar-item[data-tab]').forEach(item => {
-          item.classList.remove('active');
-          if (item.dataset.tab === tab) item.classList.add('active');
-        });
-        // 캘린더 숨기고 그리드 표시
-        document.getElementById('calendarPage').style.display = 'none';
-        document.getElementById('grid').style.display = 'grid';
-        // 사이드바 닫기
-        toggleSidebar();
-        // 기존 함수 호출
-        if (originalSwitchTab) originalSwitchTab(tab);
-      };
-
-      // 성인 필터 토글
-      let adultFilterEnabled = false;
-      function toggleAdultFilter() {
-        adultFilterEnabled = !adultFilterEnabled;
-        const toggle = document.getElementById('adultToggle');
-        toggle.classList.toggle('active', adultFilterEnabled);
-        // TODO: 카드 필터링 로직
+    function toggleSettingsAccordion() {
+      const content = document.getElementById('settingsContent');
+      const icon = document.getElementById('settingsIcon');
+      if (!content || !icon) return;
+      const isOpen = content.classList.contains('open');
+      if (isOpen) {
+        content.classList.remove('open');
+        content.style.maxHeight = '0';
+        icon.textContent = '▼';
+      } else {
+        content.classList.add('open');
+        content.style.maxHeight = content.scrollHeight + 'px';
+        icon.textContent = '▲';
       }
+    }
 
-      // 캘린더 표시
-      function showCalendar() {
-        document.getElementById('grid').style.display = 'none';
-        document.getElementById('calendarPage').style.display = 'block';
-        toggleSidebar();
-        renderCalendar();
-      }
+    let adultFilterEnabled = false;
+    function toggleAdultFilter() {
+      adultFilterEnabled = !adultFilterEnabled;
+      const toggle = document.getElementById('adultToggle');
+      if (toggle) toggle.classList.toggle('active', adultFilterEnabled);
+    }
 
-      // 즐겨찾기 표시
-      function showFavorites() {
-        // TODO: 즐겨찾기 로직
-        toggleSidebar();
-      }
+    function showCalendar() {
+      const grid = document.getElementById('grid');
+      const calPage = document.getElementById('calendarPage');
+      if (grid) grid.style.display = 'none';
+      if (calPage) calPage.style.display = 'block';
+      toggleSidebar();
+    }
 
-      // 태그 모달 표시
-      function showTags() {
-        document.getElementById('tagsModal').style.display = 'flex';
-        renderTagsList();
-        toggleSidebar();
-      }
+    function showFavorites() {
+      toggleSidebar();
+      showToast('📌 즐겨찾기 기능 준비 중...');
+    }
 
-      function closeTagsModal() {
-        document.getElementById('tagsModal').style.display = 'none';
-      }
+    function showTags() {
+      const modal = document.getElementById('tagsModal');
+      if (modal) modal.style.display = 'flex';
+      toggleSidebar();
+    }
 
-      // 상세 보기 모달
-      function openDetailModal(item) {
-        const modal = document.getElementById('detailModal');
-        document.getElementById('detailTitle').textContent = item.title || '제목 없음';
-        document.getElementById('detailCover').src = item.cover || '';
-        document.getElementById('detailInfoTitle').textContent = item.title || '-';
-        document.getElementById('detailInfoAuthor').textContent = item.author || '-';
-        document.getElementById('detailInfoStatus').textContent = item.status || '-';
-        document.getElementById('detailInfoPlatform').textContent = item.publisher || '-';
-        document.getElementById('detailInfoCategory').textContent = item.category || '-';
-        document.getElementById('detailInfoCount').textContent = item.count ? item.count + '화' : '-';
-        document.getElementById('detailInfoTags').textContent = item.tags ? item.tags.join(', ') : '-';
-        // 에피소드 목록 숨김
-        document.getElementById('detailEpisodes').style.display = 'none';
-        modal.style.display = 'flex';
-        // 현재 아이템 저장
-        window.currentDetailItem = item;
-      }
+    function closeTagsModal() {
+      const modal = document.getElementById('tagsModal');
+      if (modal) modal.style.display = 'none';
+    }
 
-      function closeDetailModal() {
-        document.getElementById('detailModal').style.display = 'none';
-      }
+    function showBackupRestore() {
+      showToast('💾 백업/복원 기능 준비 중...');
+    }
 
-      function toggleEpisodeList() {
-        const episodes = document.getElementById('detailEpisodes');
-        episodes.style.display = episodes.style.display === 'none' ? 'block' : 'none';
-        // TODO: 에피소드 목록 로드
-      }
+    function createTag() {
+      showToast('🏷️ 태그 기능 준비 중...');
+    }
 
-      function openEditFromDetail() {
-        closeDetailModal();
-        // 기존 edit 모달 열기 로직 호출
-        if (window.currentDetailItem && window.openEditModal) {
-          openEditModal(window.currentDetailItem);
-        }
-      }
+    function prevMonth() {}
+    function nextMonth() {}
+    function showAddRecordModal() {}
+  </script>
 
-      function openPlatformSite() {
-        // TODO: 플랫폼 사이트 열기 로직
-      }
-
-      // 캘린더 관련
-      let currentYear = new Date().getFullYear();
-      let currentMonth = new Date().getMonth();
-      let calendarData = JSON.parse(localStorage.getItem('calendarData') || '{}');
-
-      function renderCalendar() {
-        const title = document.getElementById('calendarTitle');
-        title.textContent = `${currentYear}년 ${currentMonth + 1}월`;
-        // TODO: 캘린더 날짜 렌더링
-      }
-
-      function prevMonth() {
-        currentMonth--;
-        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-        renderCalendar();
-      }
-
-      function nextMonth() {
-        currentMonth++;
-        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-        renderCalendar();
-      }
-
-      // 기록 추가 모달
-      function showAddRecordModal() {
-        document.getElementById('addRecordModal').style.display = 'flex';
-      }
-
-      function closeAddRecordModal() {
-        document.getElementById('addRecordModal').style.display = 'none';
-      }
-
-      function updateProgressValue() {
-        const slider = document.getElementById('progressSlider');
-        document.getElementById('progressValue').textContent = slider.value + '%';
-      }
-
-      // 태그 관련
-      let userTags = JSON.parse(localStorage.getItem('userTags') || '[]');
-
-      function renderTagsList() {
-        // TODO: 태그 목록 렌더링
-      }
-
-      function createTag() {
-        const input = document.getElementById('newTagInput');
-        const tagName = input.value.trim();
-        if (tagName && !userTags.includes(tagName)) {
-          userTags.push(tagName);
-          localStorage.setItem('userTags', JSON.stringify(userTags));
-          input.value = '';
-          renderTagsList();
-        }
-      }
-
-      // 백업/복원
-      function showBackupRestore() {
-        // TODO: 백업/복원 모달
-      }
-    </script>
-
-    <script type="module" src="js/include.js?v=3.3.4"></script>
-  </body>
+  <script type="module" src="js/include.js?v=3.3.4"></script>
+</body>
 </html>
