@@ -829,6 +829,67 @@ function toggleDescription() {
     }
 }
 
+function toggleDescription() {
+    const wrapper = document.getElementById('descWrapper');
+    if (wrapper) {
+        wrapper.classList.toggle('expanded');
+    }
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggle = document.querySelector('.sidebar-toggle');
+    
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('show');
+    if (toggle) toggle.classList.toggle('hidden');
+}
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('toki_theme', next);
+    
+    const indicator = document.getElementById('themeIndicator');
+    const headerIcon = document.getElementById('headerThemeIcon');
+    const icon = next === 'dark' ? '🌙' : '☀️';
+    
+    if (indicator) indicator.textContent = icon;
+    if (headerIcon) headerIcon.textContent = icon;
+}
+
+function toggleSettingsAccordion() {
+    const content = document.getElementById('settingsContent');
+    const icon = document.getElementById('settingsIcon');
+    
+    if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+        if (icon) icon.textContent = '▼';
+    } else {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        if (icon) icon.textContent = '▲';
+    }
+}
+
+function loadSavedTheme() {
+    const saved = localStorage.getItem('toki_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    
+    const icon = saved === 'dark' ? '🌙' : '☀️';
+    const indicator = document.getElementById('themeIndicator');
+    const headerIcon = document.getElementById('headerThemeIcon');
+    
+    if (indicator) indicator.textContent = icon;
+    if (headerIcon) headerIcon.textContent = icon;
+}
+
+window.addEventListener('DOMContentLoaded', loadSavedTheme);
+window.toggleSidebar = toggleSidebar;
+window.toggleTheme = toggleTheme;
+window.toggleSettingsAccordion = toggleSettingsAccordion;
 window.refreshDB = refreshDB;
 window.toggleSettings = toggleSettings;
 window.switchTab = switchTab;
