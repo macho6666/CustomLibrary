@@ -24,6 +24,10 @@
   --warning: #fbbf24;
   --danger: #f87171;
   
+  /* No Image 테마 변수 추가 */
+  --no-image-bg: #333333;
+  --no-image-text: #666666;
+  
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
@@ -51,6 +55,10 @@
   
   --border-color: #e5e5e5;
   --border-light: #f0f0f0;
+  
+  /* No Image 라이트 테마 */
+  --no-image-bg: #e5e5e5;
+  --no-image-text: #a3a3a3;
   
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -92,6 +100,7 @@ body {
   background: var(--text-tertiary);
 }
 
+/* ===== SIDEBAR ===== */
 .sidebar-toggle {
   position: fixed;
   left: 0;
@@ -148,13 +157,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
 .sidebar-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -163,10 +172,10 @@ body {
 .sidebar-close {
   background: none;
   border: none;
-  font-size: 22px;
+  font-size: 20px;
   color: var(--text-tertiary);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 2px 6px;
   line-height: 1;
   transition: var(--transition);
   border-radius: var(--radius-sm);
@@ -180,22 +189,24 @@ body {
 .sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 8px;
 }
 
 .sidebar-section {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
+/* 메뉴 아이템 줄간격 줄이기 */
 .sidebar-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
   color: var(--text-secondary);
+  font-size: 13px;
 }
 
 .sidebar-item:hover {
@@ -210,23 +221,23 @@ body {
 }
 
 .item-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .theme-toggle {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .theme-indicator {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .toggle-switch {
-  width: 36px;
-  height: 20px;
+  width: 32px;
+  height: 18px;
   background: var(--bg-input);
-  border-radius: 10px;
+  border-radius: 9px;
   position: relative;
   transition: var(--transition);
 }
@@ -234,8 +245,8 @@ body {
 .toggle-switch::after {
   content: '';
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   background: var(--text-secondary);
   border-radius: 50%;
   top: 2px;
@@ -248,14 +259,14 @@ body {
 }
 
 .toggle-switch.active::after {
-  left: 18px;
+  left: 16px;
   background: white;
 }
 
 .sidebar-divider {
   height: 1px;
   background: var(--border-color);
-  margin: 12px 8px;
+  margin: 8px 6px;
 }
 
 .accordion-header {
@@ -264,7 +275,7 @@ body {
 }
 
 .accordion-icon {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-tertiary);
   transition: var(--transition);
 }
@@ -275,31 +286,32 @@ body {
   transition: max-height 0.3s ease-out;
 }
 
+/* 설정 그룹 크기 줄이기 */
 .settings-group {
-  padding: 12px;
+  padding: 8px 10px;
   margin-top: 4px;
   background: var(--bg-input);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 
 .settings-group + .settings-group {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .settings-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .settings-item {
-  padding: 10px 12px;
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-secondary);
   transition: var(--transition);
 }
@@ -309,8 +321,9 @@ body {
   color: var(--text-primary);
 }
 
+/* 인풋 줄간격 줄이기 */
 .input-row {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .input-row:last-child {
@@ -319,19 +332,19 @@ body {
 
 .input-row label {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-tertiary);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .config-input {
   width: 100%;
-  padding: 8px 10px;
+  padding: 6px 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 12px;
   font-family: var(--font-primary);
   outline: none;
   transition: var(--transition);
@@ -346,22 +359,22 @@ body {
 }
 
 textarea.config-input {
-  min-height: 80px;
+  min-height: 60px;
   resize: vertical;
 }
 
 .checkbox-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
@@ -370,20 +383,20 @@ textarea.config-input {
 }
 
 .checkbox-label input {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   accent-color: var(--accent);
 }
 
 .btn-save-settings {
   width: 100%;
-  margin-top: 12px;
-  padding: 10px;
+  margin-top: 8px;
+  padding: 8px;
   background: var(--accent);
   color: white;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   font-family: var(--font-primary);
   cursor: pointer;
@@ -395,9 +408,9 @@ textarea.config-input {
 }
 
 .sidebar-version {
-  padding: 16px;
+  padding: 12px;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
   border-top: 1px solid var(--border-color);
   flex-shrink: 0;
@@ -418,6 +431,8 @@ textarea.config-input {
   opacity: 1;
   visibility: visible;
 }
+
+/* ===== APP CONTAINER ===== */
 .app-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -504,6 +519,7 @@ h1:hover {
   min-height: 60vh;
 }
 
+/* ===== GRID & CARDS ===== */
 .grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -529,7 +545,7 @@ h1:hover {
   position: relative;
   width: 100%;
   padding-top: 140%;
-  background: var(--bg-input);
+  background: var(--no-image-bg);
   overflow: hidden;
 }
 
@@ -543,8 +559,25 @@ h1:hover {
   transition: transform 0.3s ease;
 }
 
+.thumb[data-loaded="true"] + .no-image-text {
+  display: none;
+}
+
 .card:hover .thumb {
   transform: scale(1.03);
+}
+
+/* No Image 텍스트 - 테마 적용 */
+.no-image-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--no-image-text);
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .info {
@@ -620,6 +653,7 @@ h1:hover {
   color: var(--text-tertiary);
 }
 
+/* ===== DETAIL MODAL ===== */
 .detail-modal {
   max-width: 480px;
   max-height: 90vh;
@@ -629,7 +663,7 @@ h1:hover {
   position: relative;
   cursor: pointer;
   margin-bottom: 16px;
-  background: var(--bg-input);
+  background: var(--no-image-bg);
   border-radius: var(--radius-md);
   min-height: 200px;
   display: flex;
@@ -645,15 +679,16 @@ h1:hover {
   border-radius: var(--radius-md);
 }
 
+/* Detail No Image - 테마 적용 */
 .detail-cover-no-image {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   height: 200px;
-  color: var(--text-muted);
+  color: var(--no-image-text);
   font-size: 14px;
-  background: var(--bg-input);
+  background: var(--no-image-bg);
 }
 
 .cover-hint {
@@ -674,6 +709,72 @@ h1:hover {
   opacity: 1;
 }
 
+/* ===== DESCRIPTION 토글 (작품 소개) ===== */
+.description-wrapper {
+  position: relative;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.description-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.description-content {
+  position: relative;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-height: calc(1.6em * 4); /* 기본 4줄 */
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+/* 펼쳐졌을 때 */
+.description-wrapper.expanded .description-content {
+  max-height: none;
+}
+
+/* 블러 효과 (접혀있고 내용이 길 때) */
+.description-content.has-more::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(transparent, var(--bg-card));
+  pointer-events: none;
+}
+
+.description-wrapper.expanded .description-content.has-more::after {
+  display: none;
+}
+
+.desc-toggle-btn {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  background: var(--bg-input);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.desc-toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ===== DETAIL INFO ===== */
 .detail-episodes {
   margin-bottom: 16px;
   background: var(--bg-input);
@@ -790,6 +891,7 @@ h1:hover {
   background: var(--accent-hover);
 }
 
+/* ===== CALENDAR ===== */
 .calendar-page {
   padding: 20px 0;
 }
@@ -919,6 +1021,8 @@ h1:hover {
 .btn-add-record:hover {
   background: var(--bg-hover);
 }
+
+/* ===== MODALS ===== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1023,6 +1127,7 @@ h1:hover {
   background: var(--accent-hover);
 }
 
+/* ===== EDIT MODAL ===== */
 .edit-modal {
   max-width: 500px;
 }
@@ -1040,7 +1145,7 @@ h1:hover {
   height: 112px;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--bg-input);
+  background: var(--no-image-bg);
   flex-shrink: 0;
   position: relative;
 }
@@ -1051,6 +1156,7 @@ h1:hover {
   object-fit: cover;
 }
 
+/* Edit No Image - 테마 적용 */
 .edit-cover-no-image {
   width: 100%;
   height: 100%;
@@ -1058,8 +1164,8 @@ h1:hover {
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  color: var(--text-muted);
-  background: var(--bg-input);
+  color: var(--no-image-text);
+  background: var(--no-image-bg);
 }
 
 .edit-cover-actions {
@@ -1106,7 +1212,8 @@ h1:hover {
 }
 
 .edit-field input,
-.edit-field select {
+.edit-field select,
+.edit-field textarea {
   width: 100%;
   padding: 10px 12px;
   background: var(--bg-input);
@@ -1118,8 +1225,15 @@ h1:hover {
   outline: none;
 }
 
+.edit-field textarea {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
 .edit-field input:focus,
-.edit-field select:focus {
+.edit-field select:focus,
+.edit-field textarea:focus {
   border-color: var(--accent);
 }
 
@@ -1149,6 +1263,7 @@ h1:hover {
   background: var(--accent-hover);
 }
 
+/* ===== TAGS MODAL ===== */
 .tags-modal {
   max-width: 400px;
 }
@@ -1186,6 +1301,7 @@ h1:hover {
   gap: 8px;
 }
 
+/* ===== EPISODE LIST ===== */
 .episode-list {
   max-height: 60vh;
   overflow-y: auto;
@@ -1229,6 +1345,7 @@ h1:hover {
   background: var(--bg-hover);
 }
 
+/* ===== VIEWER ===== */
 .viewer-overlay {
   display: none;
   position: fixed;
@@ -1434,6 +1551,7 @@ input[type="range"]::-webkit-slider-thumb {
   margin: 0 auto;
 }
 
+/* ===== LOADER ===== */
 .loader-overlay {
   position: fixed;
   inset: 0;
@@ -1466,6 +1584,7 @@ input[type="range"]::-webkit-slider-thumb {
   }
 }
 
+/* ===== TOAST ===== */
 .toast {
   position: fixed;
   bottom: 30px;
@@ -1488,6 +1607,7 @@ input[type="range"]::-webkit-slider-thumb {
   opacity: 1;
 }
 
+/* ===== PUBLISHER COLORS ===== */
 .publisher[data-platform="네이버"] { background: #00C73C; color: white; }
 .publisher[data-platform="카카오"] { background: #FFCD00; color: #3C1E1E; }
 .publisher[data-platform="문피아"] { background: #2E3192; color: white; }
@@ -1500,6 +1620,7 @@ input[type="range"]::-webkit-slider-thumb {
 .publisher[data-platform="일본만화"] { background: #E60012; color: white; }
 .publisher[data-platform="기타플랫폼"] { background: #555; color: #ccc; }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .app-container {
     padding: 16px;
