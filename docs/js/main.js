@@ -822,6 +822,13 @@ function openPlatformSite() {
     }
 }
 
+function toggleDescription() {
+    const wrapper = document.getElementById('descWrapper');
+    if (wrapper) {
+        wrapper.classList.toggle('expanded');
+    }
+}
+
 window.refreshDB = refreshDB;
 window.toggleSettings = toggleSettings;
 window.switchTab = switchTab;
@@ -845,10 +852,5 @@ window.closeDetailModal = closeDetailModal;
 window.toggleDetailEpisodes = toggleDetailEpisodes;
 window.loadDetailEpisodes = loadDetailEpisodes;
 window.openEditFromDetail = openEditFromDetail;
-function toggleDescription() {
-    const wrapper = document.getElementById('descWrapper');
-    if (wrapper) {
-        wrapper.classList.toggle('expanded');
-    }
-}
 window.openPlatformSite = openPlatformSite;
+window.toggleDescription = toggleDescription;
