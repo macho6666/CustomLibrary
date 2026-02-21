@@ -1,7 +1,3 @@
-/**
- * 🚀 TokiSync Frontend - Main Controller v1.2.1
- */
-
 const NO_IMAGE_SVG = "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%22%20height%3D%22100%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%23333%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2250%22%20font-family%3D%22Arial%22%20font-size%3D%2212%22%20fill%3D%22%23666%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E";
 
 const DEFAULT_DOMAINS = {
@@ -26,15 +22,11 @@ function clearBlobUrls() {
     activeBlobUrls = [];
 }
 
-// ============================================================
-// 1. Initialization & Handshake
-// ============================================================
-
 window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener("message", handleMessage, false);
     
     const el = document.getElementById('viewerVersionDisplay');
-    if(el) el.innerText = `Viewer Version: ${VIEWER_VERSION}`;
+    if(el) el.innerText = `Viewer ${VIEWER_VERSION}`;
     
     if (API.isConfigured()) {
         showToast("🚀 저장된 설정으로 연결합니다...");
@@ -57,30 +49,21 @@ function handleMessage(event) {
     if (event.data.type === 'TOKI_CONFIG') {
         const { url, folderId, apiKey } = event.data;
         if (url && folderId) {
-            console.log("⚡️ Auto-Config Injected:", { url, folderId, apiKey: apiKey ? '***' : '(empty)' });
             API.setConfig(url, folderId, apiKey);
             document.getElementById('configModal').style.display = 'none';
-            showToast("⚡️ 자동 설정 완료! (Zero-Config)");
+            showToast("⚡️ 자동 설정 완료!");
             refreshDB();
         }
     }
 }
 
-// ============================================================
-// 2. Data Fetching
-// ============================================================
-
 async function refreshDB(forceId = null, silent = false, bypassCache = false) {
     const loader = document.getElementById('pageLoader');
-    const btn = document.getElementById('refreshBtn');
 
     if (!silent) {
         if(loader) {
             loader.style.display = 'flex';
-            const txt = loader.querySelector('div:last-child');
-            if(txt) txt.innerText = "데이터 불러오는 중...";
         }
-        if(btn) btn.classList.add('spin-anim');
     }
 
     try {
@@ -105,19 +88,13 @@ async function refreshDB(forceId = null, silent = false, bypassCache = false) {
         showToast(`❌ 로드 실패: ${e.message}`, 5000);
     } finally {
         if(loader) loader.style.display = 'none';
-        if(btn) btn.classList.remove('spin-anim');
     }
 }
-
-// ============================================================
-// 3. UI Rendering (Grid)
-// ============================================================
 
 function renderGrid(seriesList) {
     if (Array.isArray(seriesList)) {
         allSeries = seriesList;
     } else {
-        console.warn("[renderGrid] Expected array but got:", seriesList);
         allSeries = [];
     }
     const grid = document.getElementById('grid');
@@ -160,8 +137,6 @@ function renderGrid(seriesList) {
             } else if (series.thumbnail && series.thumbnail.startsWith("http")) {
                 thumb = series.thumbnail;
             }
-            const dynamicUrl = getDynamicLink(series);
-            const hasContentId = !!series.sourceId;
 
             let statusClass = 'ongoing';
             let statusText = status;
@@ -179,14 +154,6 @@ function renderGrid(seriesList) {
                          loading="lazy"
                          onerror="handleThumbnailError(this, '${NO_IMAGE_SVG}')"
                          onload="this.dataset.loaded='true'">
-                    <div class="overlay">
-                        <a href="${series.id ? 'https://drive.google.com/drive/u/0/folders/' + series.id : '#'}" target="_blank" class="btn btn-drive">📂 드라이브</a>
-                        <button onclick="openEpisodeList('${series.id}', '${series.name}', ${index})" class="btn btn-list">📄 목록</button>
-                        ${hasContentId ? `
-                            <a href="${dynamicUrl}" target="_blank" class="btn btn-site">🌐 사이트</a>
-                        ` : ''}
-                        <button onclick="event.stopPropagation(); openEditModal(${index})" class="btn btn-edit">✏️ 편집</button>
-                    </div>
                 </div>
                 <div class="info">
                     <div class="title" title="${series.name}">${series.name}</div>
@@ -198,12 +165,10 @@ function renderGrid(seriesList) {
                 </div>
             `;
 
-// ✨ 여기에 카드 클릭 이벤트 추가!
-card.addEventListener('click', function(e) {
-    // overlay 버튼 클릭 시 이벤트 전파 막기
-    if (e.target.closest('.overlay')) return;
-    openDetailModal(allSeries[index]);
-});            
+            card.addEventListener('click', function(e) {
+                openDetailModal(index);
+            });
+            
             grid.appendChild(card);
             
             const img = card.querySelector('img.thumb');
@@ -215,10 +180,6 @@ card.addEventListener('click', function(e) {
         }
     });
 }
-
-// ============================================================
-// 4. Utility / UI Handlers
-// ============================================================
 
 function showToast(msg, duration = 3000) {
     const toast = document.createElement('div');
@@ -248,21 +209,22 @@ let currentTab = 'all';
 function switchTab(tabName) {
     currentTab = tabName;
     
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(btn => {
-        if (btn.innerText === getTabLabel(tabName)) btn.classList.add('active');
-        else btn.classList.remove('active');
+    document.querySelectorAll('.sidebar-item[data-tab]').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.tab === tabName) item.classList.add('active');
     });
 
-    filterData();
-}
+    const calPage = document.getElementById('calendarPage');
+    const grid = document.getElementById('grid');
+    if (calPage) calPage.style.display = 'none';
+    if (grid) grid.style.display = 'grid';
 
-function getTabLabel(key) {
-    if (key === 'all') return '전체';
-    if (key === 'Webtoon') return '웹툰';
-    if (key === 'Manga') return '만화';
-    if (key === 'Novel') return '소설';
-    return '';
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+        toggleSidebar();
+    }
+
+    filterData();
 }
 
 function filterData() {
@@ -271,6 +233,7 @@ function filterData() {
     
     cards.forEach((card, index) => {
         const series = allSeries[index];
+        if (!series) return;
         const meta = series.metadata || { authors: [] };
         const authors = meta.authors || [];
         const text = (series.name + (authors.join(' '))).toLowerCase();
@@ -283,10 +246,6 @@ function filterData() {
         card.style.display = (matchText && matchTab) ? 'flex' : 'none';
     });
 }
-
-// ============================================================
-// 5. Settings / Config Logic
-// ============================================================
 
 function saveActiveSettings() {
     const domains = {
@@ -303,23 +262,20 @@ function saveActiveSettings() {
     if (folderId && deployId) {
         const apiUrl = `https://script.google.com/macros/s/${deployId}/exec`;
         API.setConfig(apiUrl, folderId, apiKey);
-        showToast("☁️ 서버 연결 설정이 업데이트되었습니다.");
     }
 
     const vMode = document.getElementById('pref_2page').checked ? '2page' : '1page';
     const vCover = document.getElementById('pref_cover').checked;
     const vRtl = document.getElementById('pref_rtl').checked;
-    const vEngine = document.querySelector('input[name="view_engine"]:checked').value;
+    const vEngine = document.querySelector('input[name="view_engine"]:checked')?.value || 'legacy';
 
     localStorage.setItem('toki_v_mode', vMode);
     localStorage.setItem('toki_v_cover', vCover);
     localStorage.setItem('toki_v_rtl', vRtl);
     localStorage.setItem('toki_v_engine', vEngine);
 
-    document.getElementById('domainPanel').style.display = 'none';
     showToast("✅ 설정이 저장되었습니다.");
     
-    renderGrid(allSeries);
     if(folderId && deployId) refreshDB();
 }
 
@@ -364,11 +320,10 @@ function loadDomains() {
 function getDynamicLink(series) {
     const contentId = series.sourceId;
     let cat = series.category || (series.metadata ? series.metadata.category : '');
-    const site = (series.name || "").toLowerCase();
 
     if (!cat) {
-        if (site.includes("북토끼")) cat = "Novel";
-        else if (site.includes("마나토끼")) cat = "Manga";
+        if ((series.name || "").includes("북토끼")) cat = "Novel";
+        else if ((series.name || "").includes("마나토끼")) cat = "Manga";
         else cat = "Webtoon";
     }
 
@@ -388,10 +343,6 @@ function getDynamicLink(series) {
 
     return contentId ? (baseUrl + path + contentId) : "#";
 }
-
-// ============================================================
-// Thumbnail Queue System
-// ============================================================
 
 async function loadNextThumbnail() {
     if (isLoadingThumbnail || thumbnailQueue.length === 0) return;
@@ -426,9 +377,7 @@ async function loadNextThumbnail() {
                     return;
                 }
             }
-        } catch (e) {
-            console.warn("[Thumbnail] Bridge fetch failed, falling back:", e);
-        }
+        } catch (e) {}
     }
     
     img.onload = () => {
@@ -460,7 +409,6 @@ function handleThumbnailError(img, fallbackSvg) {
     const originalThumb = img.dataset.thumb;
     
     if (originalThumb && originalThumb !== fallbackSvg) {
-        console.warn(`[Thumbnail] Load failed, retrying in 1s: ${originalThumb}`);
         setTimeout(() => {
             img.src = originalThumb;
         }, 1000);
@@ -471,12 +419,8 @@ function handleThumbnailError(img, fallbackSvg) {
 
 function toggleSettings() {
     const el = document.getElementById('domainPanel');
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
-
-// ============================================================
-// 6. Edit Info Modal
-// ============================================================
 
 let editingSeriesIndex = -1;
 let editingSeriesId = '';
@@ -545,11 +489,13 @@ function handleCoverSelect(event) {
 async function saveEditInfo() {
     if (!editingSeriesId) return;
 
-    showToast("💾 변경하겠습니다. 잠시만 기다려주세요...", 5000);
+    showToast("💾 저장 중...", 5000);
 
     const saveBtn = document.querySelector('.edit-btn-save');
-    saveBtn.textContent = '⏳ 저장 중...';
-    saveBtn.disabled = true;
+    if (saveBtn) {
+        saveBtn.textContent = '저장 중...';
+        saveBtn.disabled = true;
+    }
 
     try {
         const authorsRaw = document.getElementById('editAuthor').value.trim();
@@ -571,21 +517,19 @@ async function saveEditInfo() {
             last_updated: new Date().toISOString()
         };
 
-        const saveResult = await API.request('edit_save_info', {
+        await API.request('edit_save_info', {
             folderId: editingSeriesId,
             infoData: infoData
         });
-        console.log("📝 info.json saved:", saveResult);
 
         if (editCoverFile) {
             const base64 = await fileToBase64(editCoverFile);
-            const coverResult = await API.request('edit_upload_cover', {
+            await API.request('edit_upload_cover', {
                 folderId: editingSeriesId,
                 fileName: 'cover.jpg',
                 base64Data: base64,
                 mimeType: editCoverFile.type
             });
-            console.log("🖼 cover uploaded:", coverResult);
         }
 
         if (editingSeriesIndex >= 0 && allSeries[editingSeriesIndex]) {
@@ -604,7 +548,7 @@ async function saveEditInfo() {
         }
 
         renderGrid(allSeries);
-        showToast("✅ 작품 정보가 저장되었습니다.");
+        showToast("✅ 저장 완료");
         closeEditModal();
 
         setTimeout(() => {
@@ -612,11 +556,12 @@ async function saveEditInfo() {
         }, 1000);
 
     } catch (e) {
-        console.error("Edit Save Error:", e);
         showToast(`❌ 저장 실패: ${e.message}`, 5000);
     } finally {
-        saveBtn.textContent = '💾 저장';
-        saveBtn.disabled = false;
+        if (saveBtn) {
+            saveBtn.textContent = '저장';
+            saveBtn.disabled = false;
+        }
     }
 }
 
@@ -632,32 +577,28 @@ function fileToBase64(file) {
     });
 }
 
-// ============================================================
-// 7. Episode List (목록)
-// ============================================================
-
 let _currentBooks = [];
 let _currentSeriesId = '';
 let _currentSeriesTitle = '';
 
 async function openEpisodeList(seriesId, title, seriesIndex) {
     document.getElementById('episodeModal').style.display = 'flex';
-    document.querySelector('#episodeModal .modal-title').innerText = `📄 ${title}`;
+    document.querySelector('#episodeModal .modal-title').innerText = `${title}`;
     const listEl = document.getElementById('episodeList');
-    listEl.innerHTML = '<div style="padding:20px; color:#888;">로딩 중...</div>';
+    listEl.innerHTML = '<div style="padding:20px; color:var(--text-tertiary);">로딩 중...</div>';
 
     try {
         let books = await API.request('view_get_books', { seriesId: seriesId });
 
         if (!books || books.length === 0) {
-            listEl.innerHTML = '<div style="padding:20px; color:#ffaa00;">🔄 캐시 재생성 중...</div>';
+            listEl.innerHTML = '<div style="padding:20px; color:var(--warning);">캐시 재생성 중...</div>';
             books = await API.request('view_refresh_cache', { seriesId: seriesId });
         }
 
-        document.querySelector('#episodeModal .modal-title').innerText = `📄 ${title} (${books ? books.length : 0}개)`;
+        document.querySelector('#episodeModal .modal-title').innerText = `${title} (${books ? books.length : 0})`;
         renderEpisodeList(books, seriesId, title);
     } catch (e) {
-        listEl.innerHTML = `<div style="padding:20px; color:red;">오류: ${e.message}</div>`;
+        listEl.innerHTML = `<div style="padding:20px; color:var(--danger);">오류: ${e.message}</div>`;
     }
 }
 
@@ -671,22 +612,20 @@ function renderEpisodeList(books, seriesId, title) {
 
     if (!books || books.length === 0) {
         listEl.innerHTML = `
-            <div style="padding:20px; text-align:center; color:#888;">
+            <div style="padding:20px; text-align:center; color:var(--text-tertiary);">
                 <div>에피소드가 없습니다</div>
                 <button onclick="refreshEpisodeCache('${seriesId}', '${title || ''}')" 
-                        style="margin-top:10px; padding:8px 16px; background:#ff9800; color:black; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
-                    🔄 수동 캐시 재생성
+                        style="margin-top:10px; padding:8px 16px; background:var(--warning); color:black; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">
+                    🔄 캐시 재생성
                 </button>
             </div>`;
         return;
     }
 
-    // ✨ viewer_modules용 (state.js 연동)
     if (typeof updateCurrentBookList === 'function') {
         updateCurrentBookList(books);
     }
 
-    // main.js 내부용
     _currentBooks = books;
     _currentSeriesId = seriesId;
     _currentSeriesTitle = title;
@@ -716,15 +655,15 @@ function renderEpisodeList(books, seriesId, title) {
 
 async function refreshEpisodeCache(seriesId, title) {
     const listEl = document.getElementById('episodeList');
-    listEl.innerHTML = '<div style="padding:20px; color:#ffaa00;">🔄 폴더 스캔 중... 잠시만 기다려주세요</div>';
+    listEl.innerHTML = '<div style="padding:20px; color:var(--warning);">폴더 스캔 중...</div>';
 
     try {
         const books = await API.request('view_refresh_cache', { seriesId: seriesId });
-        document.querySelector('#episodeModal .modal-title').innerText = `📄 ${title} (${books ? books.length : 0}개)`;
+        document.querySelector('#episodeModal .modal-title').innerText = `${title} (${books ? books.length : 0})`;
         renderEpisodeList(books, seriesId, title);
-        showToast('✅ 캐시가 재생성되었습니다');
+        showToast('✅ 캐시 재생성 완료');
     } catch (e) {
-        listEl.innerHTML = `<div style="padding:20px; color:red;">오류: ${e.message}</div>`;
+        listEl.innerHTML = `<div style="padding:20px; color:var(--danger);">오류: ${e.message}</div>`;
     }
 }
 
@@ -748,16 +687,150 @@ function openEpisodeEdit(index) {
         newName: fullName,
         seriesId: _currentSeriesId
     }).then(() => {
-        showToast('✅ 파일 이름이 변경되었습니다');
+        showToast('✅ 파일 이름 변경 완료');
         refreshEpisodeCache(_currentSeriesId, _currentSeriesTitle);
     }).catch(e => {
         showToast(`❌ 수정 실패: ${e.message}`, 5000);
     });
 }
 
-// ============================================================
-// 🚀 Expose Globals
-// ============================================================
+window.currentDetailIndex = -1;
+window.currentDetailSeries = null;
+
+function openDetailModal(index) {
+    const series = allSeries[index];
+    if (!series) return;
+
+    const modal = document.getElementById('detailModal');
+    if (!modal) return;
+
+    const meta = series.metadata || {};
+    const authors = meta.authors || [];
+
+    document.getElementById('detailTitle').textContent = series.name || '제목 없음';
+
+    const coverImg = document.getElementById('detailCover');
+    const noImageEl = document.getElementById('detailCoverNoImage');
+    
+    let thumb = '';
+    if (series.thumbnail && series.thumbnail.startsWith("data:image")) {
+        thumb = series.thumbnail;
+    } else if (series.thumbnailId) {
+        thumb = `https://lh3.googleusercontent.com/d/${series.thumbnailId}=s400`;
+    } else if (series.thumbnail && series.thumbnail.startsWith("http")) {
+        thumb = series.thumbnail;
+    }
+    
+    if (thumb) {
+        coverImg.src = thumb;
+        coverImg.style.display = 'block';
+        if (noImageEl) noImageEl.style.display = 'none';
+    } else {
+        coverImg.style.display = 'none';
+        if (noImageEl) noImageEl.style.display = 'flex';
+    }
+
+    document.getElementById('detailInfoTitle').textContent = series.name || '-';
+    document.getElementById('detailInfoAuthor').textContent = authors.join(', ') || '작가 미상';
+    document.getElementById('detailInfoStatus').textContent = meta.status || '-';
+    document.getElementById('detailInfoPlatform').textContent = meta.publisher || '-';
+    document.getElementById('detailInfoCategory').textContent = series.category || meta.category || '-';
+    
+    const countEl = document.getElementById('detailInfoCount');
+    if (countEl) {
+        countEl.textContent = series.bookCount ? series.bookCount + '화' : '-';
+    }
+
+    const driveLink = document.getElementById('detailDriveLink');
+    if (driveLink && series.id) {
+        driveLink.href = `https://drive.google.com/drive/u/0/folders/${series.id}`;
+    }
+
+    document.getElementById('detailEpisodes').style.display = 'none';
+
+    window.currentDetailIndex = index;
+    window.currentDetailSeries = series;
+
+    modal.style.display = 'flex';
+}
+
+function closeDetailModal() {
+    const modal = document.getElementById('detailModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function toggleDetailEpisodes() {
+    const episodes = document.getElementById('detailEpisodes');
+    const series = window.currentDetailSeries;
+
+    if (!episodes || !series) return;
+
+    if (episodes.style.display === 'none') {
+        episodes.style.display = 'block';
+        loadDetailEpisodes(series.id, series.name);
+    } else {
+        episodes.style.display = 'none';
+    }
+}
+
+async function loadDetailEpisodes(seriesId, title) {
+    const listEl = document.getElementById('detailEpisodeList');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="detail-episode-loading">로딩 중...</div>';
+
+    try {
+        let books = await API.request('view_get_books', { seriesId: seriesId });
+
+        if (!books || books.length === 0) {
+            listEl.innerHTML = '<div class="detail-episode-loading">캐시 재생성 중...</div>';
+            books = await API.request('view_refresh_cache', { seriesId: seriesId });
+        }
+
+        if (!books || books.length === 0) {
+            listEl.innerHTML = '<div class="detail-episode-loading">회차가 없습니다</div>';
+            return;
+        }
+
+        _currentBooks = books;
+        _currentSeriesId = seriesId;
+        _currentSeriesTitle = title;
+
+        listEl.innerHTML = '';
+        books.forEach((book, index) => {
+            const item = document.createElement('div');
+            item.className = 'detail-episode-item';
+            item.innerHTML = `<span>${book.name}</span>`;
+            item.onclick = () => {
+                closeDetailModal();
+                if (typeof loadViewer === 'function') {
+                    loadViewer(index);
+                }
+            };
+            listEl.appendChild(item);
+        });
+    } catch (e) {
+        listEl.innerHTML = `<div class="detail-episode-loading" style="color:var(--danger);">오류: ${e.message}</div>`;
+    }
+}
+
+function openEditFromDetail() {
+    const index = window.currentDetailIndex;
+    if (index >= 0) {
+        closeDetailModal();
+        openEditModal(index);
+    }
+}
+
+function openPlatformSite() {
+    const series = window.currentDetailSeries;
+    if (!series) return;
+
+    const url = getDynamicLink(series);
+    if (url && url !== '#') {
+        window.open(url, '_blank');
+    }
+}
 
 window.refreshDB = refreshDB;
 window.toggleSettings = toggleSettings;
@@ -777,3 +850,9 @@ window.closeEpisodeModal = closeEpisodeModal;
 window.renderEpisodeList = renderEpisodeList;
 window.refreshEpisodeCache = refreshEpisodeCache;
 window.openEpisodeEdit = openEpisodeEdit;
+window.openDetailModal = openDetailModal;
+window.closeDetailModal = closeDetailModal;
+window.toggleDetailEpisodes = toggleDetailEpisodes;
+window.loadDetailEpisodes = loadDetailEpisodes;
+window.openEditFromDetail = openEditFromDetail;
+window.openPlatformSite = openPlatformSite;
