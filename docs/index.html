@@ -148,6 +148,211 @@
       <div class="calendar-page" id="calendarPage" style="display: none;"></div>
     </main>
   </div>
+  <!-- ===== DETAIL MODAL ===== -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal detail-modal">
+    <div class="modal-header">
+      <span class="modal-title" id="detailTitle">작품 제목</span>
+      <button class="modal-close" onclick="closeDetailModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- 커버 -->
+      <div class="detail-cover-wrapper" onclick="toggleDetailEpisodes()">
+        <img id="detailCover" class="detail-cover" src="" alt="cover">
+        <div class="detail-cover-no-image" id="detailCoverNoImage">No Image</div>
+        <div class="cover-hint">클릭하여 회차 보기</div>
+      </div>
+
+      <!-- 회차 목록 -->
+      <div class="detail-episodes" id="detailEpisodes" style="display:none;">
+        <div class="episode-drive-link">
+          <a id="detailDriveLink" href="#" target="_blank">📁 Google Drive에서 열기</a>
+        </div>
+        <div class="episode-list-wrapper">
+          <div id="detailEpisodeList"></div>
+        </div>
+      </div>
+
+      <!-- 작품 정보 -->
+      <div class="detail-info">
+        <div class="info-row">
+          <span class="info-label">제목</span>
+          <span class="info-value" id="detailInfoTitle">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">작가</span>
+          <span class="info-value" id="detailInfoAuthor">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">상태</span>
+          <span class="info-value" id="detailInfoStatus">-</span>
+        </div>
+        <div class="info-row clickable" onclick="openPlatformSite()">
+          <span class="info-label">플랫폼</span>
+          <span class="info-value info-link" id="detailInfoPlatform">-</span>
+        </div>
+      </div>
+
+      <!-- 작품 소개 (토글) -->
+      <div class="description-wrapper" id="descWrapper">
+        <div class="description-label">작품 소개</div>
+        <div class="description-content" id="detailInfoDescription">
+          소개 정보가 없습니다.
+        </div>
+        <button class="desc-toggle-btn" id="descToggleBtn" onclick="toggleDescription()"></button>
+      </div>
+
+      <!-- 수정 버튼 -->
+      <div class="detail-actions">
+        <button class="btn-edit-detail" onclick="openEditFromDetail()">수정</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EDIT MODAL ===== -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal edit-modal">
+    <div class="modal-header">
+      <span class="modal-title">작품 정보 수정</span>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <!-- 커버 섹션 -->
+      <div class="edit-cover-section">
+        <div class="edit-cover-preview">
+          <img id="editCoverPreview" src="" style="display:none;">
+          <div class="edit-cover-no-image" id="editCoverNoImage">No Image</div>
+        </div>
+        <div class="edit-cover-actions">
+          <label class="btn-upload">
+            📷 커버 변경
+            <input type="file" accept="image/*" onchange="handleCoverSelect(event)" style="display:none;">
+          </label>
+          <span class="edit-cover-filename" id="editCoverFilename"></span>
+        </div>
+      </div>
+
+      <!-- 폼 -->
+      <div class="edit-form">
+        <div class="edit-field">
+          <label>제목</label>
+          <input type="text" id="editTitle">
+        </div>
+        <div class="edit-field">
+          <label>Source ID</label>
+          <input type="text" id="editSourceId">
+        </div>
+        <div class="edit-field">
+          <label>작가 (쉼표로 구분)</label>
+          <input type="text" id="editAuthor">
+        </div>
+        <div class="edit-field">
+          <label>상태</label>
+          <select id="editStatus">
+            <option value="Unknown">Unknown</option>
+            <option value="연재중">연재중</option>
+            <option value="완결">완결</option>
+            <option value="COMPLETED">COMPLETED</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>플랫폼</label>
+          <input type="text" id="editPublisher" placeholder="네이버, 카카오, 문피아...">
+        </div>
+        <div class="edit-field">
+          <label>카테고리</label>
+          <select id="editCategory">
+            <option value="Webtoon">Webtoon</option>
+            <option value="Manga">Manga</option>
+            <option value="Novel">Novel</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>Source URL</label>
+          <input type="text" id="editUrl" placeholder="https://...">
+        </div>
+        <div class="edit-field">
+          <label>플랫폼 링크</label>
+          <input type="text" id="editPlatformUrl" placeholder="https://...">
+        </div>
+        <div class="edit-field">
+          <label>작품 소개</label>
+          <textarea id="editDescription" placeholder="작품 소개를 입력하세요..."></textarea>
+        </div>
+      </div>
+
+      <!-- 버튼 -->
+      <div class="edit-buttons">
+        <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
+        <button class="btn edit-btn-save" onclick="saveEditInfo()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EPISODE MODAL ===== -->
+<div class="modal-overlay" id="episodeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">회차 목록</span>
+      <button class="modal-close" onclick="closeEpisodeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="episode-list" id="episodeList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONFIG MODAL ===== -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">서버 설정</span>
+      <button class="modal-close" onclick="document.getElementById('configModal').style.display='none'">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">Google Apps Script URL과 Folder ID를 입력하세요.</p>
+      <div class="config-group">
+        <label class="config-label">API URL</label>
+        <input type="text" id="configApiUrl" class="config-input" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div class="config-group">
+        <label class="config-label">Folder ID</label>
+        <input type="text" id="configFolderId" class="config-input" placeholder="Google Drive Folder ID">
+      </div>
+      <div class="config-group">
+        <label class="config-label">API Key (선택)</label>
+        <input type="password" id="configApiKey" class="config-input" placeholder="API Key">
+      </div>
+      <button class="btn btn-save" onclick="saveManualConfig()">연결</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAGS MODAL ===== -->
+<div class="modal-overlay" id="tagsModal">
+  <div class="modal tags-modal">
+    <div class="modal-header">
+      <span class="modal-title">태그 관리</span>
+      <button class="modal-close" onclick="document.getElementById('tagsModal').style.display='none'">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tags-create">
+        <input type="text" class="config-input" id="newTagInput" placeholder="새 태그 이름">
+        <button class="btn-add-tag" onclick="createTag()">추가</button>
+      </div>
+      <div class="tags-list" id="tagsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE LOADER ===== -->
+<div class="loader-overlay" id="pageLoader" style="display:none;">
+  <div class="spinner"></div>
+  <div class="loader-text">로딩 중...</div>
+</div>
+  
     <div id="detailModal" class="modal-overlay">
     <div class="modal detail-modal">
       <div class="modal-header">
