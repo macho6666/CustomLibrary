@@ -726,9 +726,6 @@ function openDetailModal(index) {
     if (descWrapper) {
         descWrapper.classList.remove('expanded');
     }
-    if (descToggle) {
-        descToggle.textContent = '▽';
-    }
 
     const driveLink = document.getElementById('detailDriveLink');
     if (driveLink && series.id) {
