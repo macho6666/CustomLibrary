@@ -6,7 +6,7 @@
   <title>⭐ My Library ⭐</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="css/style.css?v=2.0.0" />
+  <link rel="stylesheet" href="css/style.css?v=2.1.0" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="js/bridge.js"></script>
   <script src="js/api_client.js"></script>
@@ -33,51 +33,35 @@
       <div class="sidebar-divider"></div>
 
       <div class="sidebar-section">
-        <div class="sidebar-item active" data-tab="all" onclick="switchTab('all')">
-          <span class="item-text">All</span>
-        </div>
-        <div class="sidebar-item" data-tab="Novel" onclick="switchTab('Novel')">
-          <span class="item-text">Novel</span>
-        </div>
-        <div class="sidebar-item" data-tab="Webtoon" onclick="switchTab('Webtoon')">
-          <span class="item-text">Webtoon</span>
-        </div>
-        <div class="sidebar-item" data-tab="Manga" onclick="switchTab('Manga')">
-          <span class="item-text">Comic</span>
-        </div>
+        <div class="sidebar-item active" data-tab="all" onclick="switchTab('all')">All</div>
+        <div class="sidebar-item" data-tab="Novel" onclick="switchTab('Novel')">Novel</div>
+        <div class="sidebar-item" data-tab="Webtoon" onclick="switchTab('Webtoon')">Webtoon</div>
+        <div class="sidebar-item" data-tab="Manga" onclick="switchTab('Manga')">Comic</div>
       </div>
 
       <div class="sidebar-divider"></div>
 
       <div class="sidebar-section">
-        <div class="sidebar-item toggle-item" onclick="toggleAdultFilter()">
-          <span class="item-text">Adult</span>
+        <div class="sidebar-item" onclick="toggleAdultFilter()">
+          <span>Adult</span>
           <span class="toggle-switch" id="adultToggle"></span>
         </div>
-        <div class="sidebar-item" onclick="showFavorites()">
-          <span class="item-text">Favorites</span>
-        </div>
-        <div class="sidebar-item" onclick="showCalendar()">
-          <span class="item-text">Calendar</span>
-        </div>
-        <div class="sidebar-item" onclick="showTags()">
-          <span class="item-text">Tags</span>
-        </div>
+        <div class="sidebar-item" onclick="showFavorites()">Favorites</div>
+        <div class="sidebar-item" onclick="showCalendar()">Calendar</div>
+        <div class="sidebar-item" onclick="showTags()">Tags</div>
       </div>
 
       <div class="sidebar-divider"></div>
 
       <div class="sidebar-section">
         <div class="sidebar-item accordion-header" onclick="toggleSettingsAccordion()">
-          <span class="item-text">Settings</span>
+          <span>Settings</span>
           <span class="accordion-icon" id="settingsIcon">▼</span>
         </div>
         
         <div class="accordion-content" id="settingsContent">
           <div class="settings-group">
-            <div class="settings-item" onclick="showBackupRestore()">
-              <span>백업/복원</span>
-            </div>
+            <div class="settings-item" onclick="showBackupRestore()">백업/복원</div>
           </div>
 
           <div class="settings-group">
@@ -139,9 +123,7 @@
       </div>
     </div>
     
-    <div class="sidebar-version" id="viewerVersionDisplay">
-      Version: Loading...
-    </div>
+    <div class="sidebar-version" id="viewerVersionDisplay">Version: Loading...</div>
   </div>
 
   <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -163,42 +145,7 @@
 
     <main class="main-content">
       <div class="grid-container" id="grid"></div>
-      
-      <div class="calendar-page" id="calendarPage" style="display: none;">
-        <div class="calendar-container">
-          <div class="calendar-stats">
-            <div class="stat-item">
-              <span class="stat-value" id="statCompleted">0</span>
-              <span class="stat-label">Completed</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value" id="statDropped">0</span>
-              <span class="stat-label">Dropped</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value" id="statReading">0</span>
-              <span class="stat-label">Reading</span>
-            </div>
-          </div>
-          
-          <div class="calendar-wrapper">
-            <div class="calendar-header">
-              <button class="cal-nav" onclick="prevMonth()">◀</button>
-              <span class="cal-title" id="calendarTitle">2025년 1월</span>
-              <button class="cal-nav" onclick="nextMonth()">▶</button>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-          </div>
-          
-          <div class="calendar-records" id="calendarRecords">
-            <div class="records-header">
-              <span class="records-date" id="selectedDate">날짜를 선택하세요</span>
-            </div>
-            <div class="records-list" id="recordsList"></div>
-            <button class="btn btn-add-record" id="btnAddRecord" style="display:none;" onclick="showAddRecordModal()">+ 작품 추가</button>
-          </div>
-        </div>
-      </div>
+      <div class="calendar-page" id="calendarPage" style="display: none;"></div>
     </main>
   </div>
     <div id="detailModal" class="modal-overlay">
@@ -238,13 +185,13 @@
             <span class="info-label">플랫폼</span>
             <span class="info-value info-link" id="detailInfoPlatform">-</span>
           </div>
-          <div class="info-row">
-            <span class="info-label">카테고리</span>
-            <span class="info-value" id="detailInfoCategory">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">회차</span>
-            <span class="info-value" id="detailInfoCount">-</span>
+          <div class="info-row description-row">
+            <span class="info-label">작품 소개</span>
+            <div class="description-wrapper">
+              <div class="description-content" id="detailInfoDescription">-</div>
+              <div class="description-blur"></div>
+              <button class="description-toggle" id="descToggleBtn" onclick="toggleDescription()">▽</button>
+            </div>
           </div>
         </div>
         
@@ -287,8 +234,8 @@
           <input type="text" id="configFolderId" class="config-input" placeholder="Google Drive Folder ID" />
         </div>
         <div class="config-group">
-          <label class="config-label">API Key (보안)</label>
-          <input type="password" id="configApiKey" class="config-input" placeholder="API Key (선택사항)" />
+          <label class="config-label">API Key</label>
+          <input type="password" id="configApiKey" class="config-input" placeholder="API Key" />
         </div>
         <button class="btn btn-save" onclick="saveManualConfig()">설정 저장</button>
       </div>
@@ -350,17 +297,18 @@
             </select>
           </div>
           <div class="edit-field">
-            <label>카테고리</label>
-            <select id="editCategory">
-              <option value="Manga">만화 (Manga)</option>
-              <option value="Webtoon">웹툰 (Webtoon)</option>
-              <option value="Novel">소설 (Novel)</option>
-            </select>
+            <label>플랫폼 링크</label>
+            <input type="text" id="editPlatformUrl" placeholder="https://...">
+          </div>
+          <div class="edit-field">
+            <label>작품 소개</label>
+            <textarea id="editDescription" class="config-input" placeholder="작품 소개를 입력하세요..."></textarea>
           </div>
         </div>
 
         <input type="hidden" id="editSourceId">
         <input type="hidden" id="editUrl">
+        <input type="hidden" id="editCategory">
 
         <div class="edit-buttons">
           <button class="btn edit-btn-cancel" onclick="closeEditModal()">취소</button>
@@ -518,9 +466,13 @@
       showToast('🏷️ 태그 기능 준비 중...');
     }
 
-    function prevMonth() {}
-    function nextMonth() {}
-    function showAddRecordModal() {}
+    function toggleDescription() {
+      const wrapper = document.querySelector('.description-wrapper');
+      const btn = document.getElementById('descToggleBtn');
+      if (!wrapper || !btn) return;
+      wrapper.classList.toggle('expanded');
+      btn.textContent = wrapper.classList.contains('expanded') ? '△' : '▽';
+    }
   </script>
 
   <script type="module" src="js/include.js?v=3.3.4"></script>
