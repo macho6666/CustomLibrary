@@ -848,4 +848,10 @@ window.closeDetailModal = closeDetailModal;
 window.toggleDetailEpisodes = toggleDetailEpisodes;
 window.loadDetailEpisodes = loadDetailEpisodes;
 window.openEditFromDetail = openEditFromDetail;
+function toggleDescription() {
+    const wrapper = document.getElementById('descWrapper');
+    if (wrapper) {
+        wrapper.classList.toggle('expanded');
+    }
+}
 window.openPlatformSite = openPlatformSite;
