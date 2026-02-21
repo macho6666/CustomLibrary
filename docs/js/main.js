@@ -10,11 +10,9 @@ const VIEWER_VERSION = "v1.1.3";
 window.TOKI_VIEWER_VERSION = VIEWER_VERSION;
 
 let allSeries = [];
-
 const thumbnailQueue = [];
 let isLoadingThumbnail = false;
 const THUMBNAIL_DELAY_MS = 250;
-
 let activeBlobUrls = [];
 
 function clearBlobUrls() {
@@ -60,10 +58,8 @@ function handleMessage(event) {
 async function refreshDB(forceId = null, silent = false, bypassCache = false) {
     const loader = document.getElementById('pageLoader');
 
-    if (!silent) {
-        if(loader) {
-            loader.style.display = 'flex';
-        }
+    if (!silent && loader) {
+        loader.style.display = 'flex';
     }
 
     try {
@@ -71,7 +67,6 @@ async function refreshDB(forceId = null, silent = false, bypassCache = false) {
         if (bypassCache) payload.bypassCache = true;
 
         const response = await API.request('view_get_library', payload);
-
         let seriesList = [];
 
         if (Array.isArray(response)) {
@@ -154,6 +149,7 @@ function renderGrid(seriesList) {
                          loading="lazy"
                          onerror="handleThumbnailError(this, '${NO_IMAGE_SVG}')"
                          onload="this.dataset.loaded='true'">
+                    <div class="no-image-text">No Image</div>
                 </div>
                 <div class="info">
                     <div class="title" title="${series.name}">${series.name}</div>
@@ -239,7 +235,6 @@ function filterData() {
         const text = (series.name + (authors.join(' '))).toLowerCase();
         
         const matchText = text.includes(query);
-        
         const cat = series.category || (series.metadata ? series.metadata.category : 'Unknown');
         const matchTab = (currentTab === 'all') || (cat === currentTab);
 
@@ -298,9 +293,7 @@ function loadDomains() {
         const match = API._config.baseUrl.match(/\/s\/([^\/]+)\/exec/);
         if (match && match[1]) elDeploy.value = match[1];
     }
-    if (API._config.apiKey && elApiKey) {
-        elApiKey.value = API._config.apiKey;
-    }
+    if (API._config.apiKey && elApiKey) elApiKey.value = API._config.apiKey;
 
     const vMode = localStorage.getItem('toki_v_mode') || '1page';
     const vCover = (localStorage.getItem('toki_v_cover') === 'true');
@@ -312,12 +305,12 @@ function loadDomains() {
     if(document.getElementById('pref_rtl')) document.getElementById('pref_rtl').checked = vRtl;
     
     const radios = document.getElementsByName('view_engine');
-    for(const r of radios) {
-        r.checked = (r.value === vEngine);
-    }
+    for(const r of radios) r.checked = (r.value === vEngine);
 }
 
 function getDynamicLink(series) {
+    if (series.platformUrl) return series.platformUrl;
+    
     const contentId = series.sourceId;
     let cat = series.category || (series.metadata ? series.metadata.category : '');
 
@@ -335,8 +328,7 @@ function getDynamicLink(series) {
     if (cat === "Novel") { 
         baseUrl = `https://booktoki${saved.booktoki}.com`; 
         path = "/novel/"; 
-    }
-    else if (cat === "Manga") { 
+    } else if (cat === "Manga") { 
         baseUrl = `https://manatoki${saved.manatoki}.net`; 
         path = "/comic/"; 
     }
@@ -354,17 +346,12 @@ async function loadNextThumbnail() {
         try {
             const fileIdMatch = url.match(/\/d\/([^=]+)/);
             if (fileIdMatch) {
-                const response = await window.tokiBridge.fetch(url, {
-                    method: 'GET',
-                    responseType: 'blob'
-                });
-                
+                const response = await window.tokiBridge.fetch(url, { method: 'GET', responseType: 'blob' });
                 if (response) {
                     const blob = new Blob([response]);
                     const blobUrl = URL.createObjectURL(blob);
                     activeBlobUrls.push(blobUrl);
                     img.src = blobUrl;
-                    
                     img.onload = () => {
                         img.dataset.loaded = 'true';
                         isLoadingThumbnail = false;
@@ -385,12 +372,10 @@ async function loadNextThumbnail() {
         isLoadingThumbnail = false;
         setTimeout(loadNextThumbnail, THUMBNAIL_DELAY_MS);
     };
-    
     img.onerror = () => {
         isLoadingThumbnail = false;
         setTimeout(loadNextThumbnail, THUMBNAIL_DELAY_MS);
     };
-    
     img.src = url;
 }
 
@@ -404,14 +389,10 @@ function handleThumbnailError(img, fallbackSvg) {
         img.src = fallbackSvg;
         return;
     }
-    
     img.dataset.retried = 'true';
     const originalThumb = img.dataset.thumb;
-    
     if (originalThumb && originalThumb !== fallbackSvg) {
-        setTimeout(() => {
-            img.src = originalThumb;
-        }, 1000);
+        setTimeout(() => { img.src = originalThumb; }, 1000);
     } else {
         img.src = fallbackSvg;
     }
@@ -443,6 +424,8 @@ function openEditModal(index) {
     document.getElementById('editPublisher').value = meta.publisher || '';
     document.getElementById('editCategory').value = series.category || meta.category || 'Manga';
     document.getElementById('editUrl').value = series.sourceUrl || '';
+    document.getElementById('editPlatformUrl').value = series.platformUrl || '';
+    document.getElementById('editDescription').value = meta.description || '';
 
     const preview = document.getElementById('editCoverPreview');
     const noImage = document.getElementById('editCoverNoImage');
@@ -508,9 +491,11 @@ async function saveEditInfo() {
                 authors: authors.length > 0 ? authors : ['Unknown'],
                 status: document.getElementById('editStatus').value,
                 category: document.getElementById('editCategory').value,
-                publisher: document.getElementById('editPublisher').value
+                publisher: document.getElementById('editPublisher').value,
+                description: document.getElementById('editDescription').value.trim()
             },
             url: document.getElementById('editUrl').value.trim(),
+            platformUrl: document.getElementById('editPlatformUrl').value.trim(),
             author: authors.length > 0 ? authors[0] : 'Unknown',
             last_episode: 0,
             file_count: 0,
@@ -537,13 +522,15 @@ async function saveEditInfo() {
             series.name = infoData.title;
             series.sourceId = infoData.id;
             series.sourceUrl = infoData.url;
+            series.platformUrl = infoData.platformUrl;
             series.category = infoData.metadata.category;
             series.metadata = {
                 ...series.metadata,
                 authors: infoData.metadata.authors,
                 status: infoData.metadata.status,
                 publisher: infoData.metadata.publisher,
-                category: infoData.metadata.category
+                category: infoData.metadata.category,
+                description: infoData.metadata.description
             };
         }
 
@@ -551,9 +538,7 @@ async function saveEditInfo() {
         showToast("✅ 저장 완료");
         closeEditModal();
 
-        setTimeout(() => {
-            refreshDB(null, true, true);
-        }, 1000);
+        setTimeout(() => { refreshDB(null, true, true); }, 1000);
 
     } catch (e) {
         showToast(`❌ 저장 실패: ${e.message}`, 5000);
@@ -568,10 +553,7 @@ async function saveEditInfo() {
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-        };
+        reader.onload = () => resolve(reader.result.split(',')[1]);
         reader.onerror = reject;
         reader.readAsDataURL(file);
     });
@@ -640,8 +622,7 @@ function renderEpisodeList(books, seriesId, title) {
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 <span class="ep-meta">${size}</span>
-                <button onclick="event.stopPropagation(); openEpisodeEdit(${index})" 
-                        class="ep-edit-btn" title="이름 변경">✏️</button>
+                <button onclick="event.stopPropagation(); openEpisodeEdit(${index})" class="ep-edit-btn" title="이름 변경">✏️</button>
             </div>
         `;
         item.onclick = () => {
@@ -679,7 +660,6 @@ function openEpisodeEdit(index) {
     if (newName === null || newName.trim() === '' || newName.trim() === nameOnly) return;
 
     const fullName = newName.trim() + ext;
-
     showToast("✏️ 이름 변경 중...", 3000);
 
     API.request('view_rename_file', {
@@ -706,6 +686,7 @@ function openDetailModal(index) {
 
     const meta = series.metadata || {};
     const authors = meta.authors || [];
+    const description = meta.description || '';
 
     document.getElementById('detailTitle').textContent = series.name || '제목 없음';
 
@@ -734,11 +715,19 @@ function openDetailModal(index) {
     document.getElementById('detailInfoAuthor').textContent = authors.join(', ') || '작가 미상';
     document.getElementById('detailInfoStatus').textContent = meta.status || '-';
     document.getElementById('detailInfoPlatform').textContent = meta.publisher || '-';
-    document.getElementById('detailInfoCategory').textContent = series.category || meta.category || '-';
     
-    const countEl = document.getElementById('detailInfoCount');
-    if (countEl) {
-        countEl.textContent = series.bookCount ? series.bookCount + '화' : '-';
+    const descEl = document.getElementById('detailInfoDescription');
+    const descWrapper = document.querySelector('.description-wrapper');
+    const descToggle = document.getElementById('descToggleBtn');
+    
+    if (descEl) {
+        descEl.textContent = description || '소개 정보가 없습니다.';
+    }
+    if (descWrapper) {
+        descWrapper.classList.remove('expanded');
+    }
+    if (descToggle) {
+        descToggle.textContent = '▽';
     }
 
     const driveLink = document.getElementById('detailDriveLink');
@@ -792,6 +781,10 @@ async function loadDetailEpisodes(seriesId, title) {
             return;
         }
 
+        if (typeof updateCurrentBookList === 'function') {
+            updateCurrentBookList(books);
+        }
+
         _currentBooks = books;
         _currentSeriesId = seriesId;
         _currentSeriesTitle = title;
@@ -826,7 +819,7 @@ function openPlatformSite() {
     const series = window.currentDetailSeries;
     if (!series) return;
 
-    const url = getDynamicLink(series);
+    const url = series.platformUrl || getDynamicLink(series);
     if (url && url !== '#') {
         window.open(url, '_blank');
     }
