@@ -755,8 +755,11 @@ h1:hover {
   display: none;
 }
 
+/* 작품 소개 토글 버튼 */
 .desc-toggle-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   padding: 8px;
   margin-top: 8px;
@@ -774,6 +777,24 @@ h1:hover {
   color: var(--text-primary);
 }
 
+/* 쉐브론 아이콘 */
+.desc-toggle-btn::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.25s ease;
+  margin-top: -2px;
+}
+
+/* 펼쳤을 때 위로 회전 */
+.description-wrapper.expanded .desc-toggle-btn::after {
+  transform: rotate(-135deg);
+  margin-top: 2px;
+}
 /* ===== DETAIL INFO ===== */
 .detail-episodes {
   margin-bottom: 16px;
