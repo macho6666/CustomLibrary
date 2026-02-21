@@ -573,7 +573,135 @@
         content.classList.toggle('open');
         icon.textContent = content.classList.contains('open') ? '▲' : '▼';
       }
+// 상세 모달 열기
+function openDetailModal(series) {
+  const modal = document.getElementById('detailModal');
+  if (!modal) return;
+  
+  const meta = series.metadata || {};
+  const authors = meta.authors || [];
+  
+  // 제목
+  document.getElementById('detailTitle').textContent = series.name || '제목 없음';
+  
+  // 커버 이미지
+  const coverImg = document.getElementById('detailCover');
+  if (series.thumbnailId) {
+    coverImg.src = `https://lh3.googleusercontent.com/d/${series.thumbnailId}=s400`;
+  } else if (series.thumbnail) {
+    coverImg.src = series.thumbnail;
+  } else {
+    coverImg.src = '';
+  }
+  
+  // 정보
+  document.getElementById('detailInfoTitle').textContent = series.name || '-';
+  document.getElementById('detailInfoAuthor').textContent = authors.join(', ') || '-';
+  document.getElementById('detailInfoStatus').textContent = meta.status || '-';
+  document.getElementById('detailInfoPlatform').textContent = meta.publisher || '-';
+  document.getElementById('detailInfoCategory').textContent = series.category || meta.category || '-';
+  document.getElementById('detailInfoCount').textContent = series.count ? series.count + '화' : '-';
+  document.getElementById('detailInfoTags').textContent = series.tags ? series.tags.join(', ') : '-';
+  
+  // 드라이브 링크
+  const driveLink = document.getElementById('detailDriveLink');
+  if (driveLink && series.id) {
+    driveLink.href = `https://drive.google.com/drive/u/0/folders/${series.id}`;
+  }
+  
+  // 회차 목록 숨김
+  document.getElementById('detailEpisodes').style.display = 'none';
+  
+  // 현재 작품 저장
+  window.currentDetailSeries = series;
+  
+  modal.style.display = 'flex';
+}
 
+// 상세 모달 닫기
+function closeDetailModal() {
+  const modal = document.getElementById('detailModal');
+  if (modal) modal.style.display = 'none';
+}
+
+// 회차 목록 토글
+function toggleEpisodeList() {
+  const episodes = document.getElementById('detailEpisodes');
+  const series = window.currentDetailSeries;
+  
+  if (!episodes || !series) return;
+  
+  if (episodes.style.display === 'none') {
+    // 열기
+    episodes.style.display = 'block';
+    loadDetailEpisodes(series.id);
+  } else {
+    // 닫기
+    episodes.style.display = 'none';
+  }
+}
+
+// 회차 목록 로드
+async function loadDetailEpisodes(seriesId) {
+  const listEl = document.getElementById('detailEpisodeList');
+  if (!listEl) return;
+  
+  listEl.innerHTML = '<div style="padding:12px; color:var(--text-tertiary);">로딩 중...</div>';
+  
+  try {
+    let books = await API.request('view_get_books', { seriesId: seriesId });
+    
+    if (!books || books.length === 0) {
+      listEl.innerHTML = '<div style="padding:12px; color:var(--text-tertiary);">회차가 없습니다</div>';
+      return;
+    }
+    
+    listEl.innerHTML = '';
+    books.forEach((book, index) => {
+      const item = document.createElement('div');
+      item.className = 'detail-episode-item';
+      item.textContent = book.name;
+      item.onclick = () => {
+        // 뷰어 열기 (기존 함수 사용)
+        closeDetailModal();
+        if (typeof loadViewer === 'function') {
+          _currentBooks = books;
+          loadViewer(index);
+        }
+      };
+      listEl.appendChild(item);
+    });
+  } catch (e) {
+    listEl.innerHTML = `<div style="padding:12px; color:var(--danger);">오류: ${e.message}</div>`;
+  }
+}
+
+// Edit 모달 열기 (상세에서)
+function openEditFromDetail() {
+  const series = window.currentDetailSeries;
+  if (!series) return;
+  
+  // allSeries에서 인덱스 찾기
+  const index = allSeries.findIndex(s => s.id === series.id);
+  if (index >= 0) {
+    closeDetailModal();
+    openEditModal(index);
+  }
+}
+
+// 플랫폼 사이트 열기
+function openPlatformSite() {
+  const series = window.currentDetailSeries;
+  if (!series) return;
+  
+  const url = getDynamicLink(series);
+  if (url && url !== '#') {
+    window.open(url, '_blank');
+  }
+}
+
+// 전역 변수
+window.currentDetailSeries = null;
       // 탭 전환
       const originalSwitchTab = window.switchTab;
       window.switchTab = function(tab) {
