@@ -921,6 +921,8 @@ function handleCoverSelect(event) {
     reader.readAsDataURL(file);
 }
 
+console.log('📝 infoData:', JSON.stringify(infoData, null, 2));
+
 async function saveEditInfo() {
     if (!editingSeriesId) return;
 
