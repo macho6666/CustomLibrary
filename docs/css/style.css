@@ -1978,13 +1978,14 @@ a.btn {
   display: block !important;
   text-decoration: none;
 }
-/* 임시 테스트 */
-.info-row.clickable {
-  padding: 10px 0 !important;
-  min-height: auto !important;
-  height: auto !important;
-}
 
 .info-row.clickable .info-value {
   line-height: 1.2 !important;
 }
+/* 이미지 로드 후 배경/No Image 숨기기 */
+.thumb-wrapper:has(.thumb[data-loaded="true"]) {
+  background: transparent !important;
+}
+
+.thumb[data-loaded="true"] + .no-image-text {
+  display: none;
