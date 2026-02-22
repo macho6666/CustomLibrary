@@ -6,7 +6,7 @@ const DEFAULT_DOMAINS = {
     booktoki: '469'
 };
 
-const VIEWER_VERSION = "v1.1.3";
+const VIEWER_VERSION = "v2.0.0";
 window.TOKI_VIEWER_VERSION = VIEWER_VERSION;
 
 let allSeries = [];
@@ -15,13 +15,24 @@ let isLoadingThumbnail = false;
 const THUMBNAIL_DELAY_MS = 250;
 let activeBlobUrls = [];
 
-function clearBlobUrls() {
-    activeBlobUrls.forEach(url => URL.revokeObjectURL(url));
-    activeBlobUrls = [];
-}
+// 태그 & 캘린더 데이터
+let customTags = [];
+let seriesTags = {};
+let calendarData = {};
+let adultFilterEnabled = false;
 
+// 현재 상태
+let currentTab = 'all';
+let currentTagFilter = null;
+let currentCalendarMonth = new Date();
+let selectedCalendarDate = null;
+
+// ===== 초기화 =====
 window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener("message", handleMessage, false);
+    
+    loadSavedTheme();
+    loadLocalData();
     
     const el = document.getElementById('viewerVersionDisplay');
     if(el) el.innerText = `Viewer ${VIEWER_VERSION}`;
@@ -55,6 +66,86 @@ function handleMessage(event) {
     }
 }
 
+// ===== 로컬 데이터 관리 =====
+function loadLocalData() {
+    try {
+        customTags = JSON.parse(localStorage.getItem('toki_tags')) || [];
+        seriesTags = JSON.parse(localStorage.getItem('toki_series_tags')) || {};
+        calendarData = JSON.parse(localStorage.getItem('toki_calendar')) || {};
+        adultFilterEnabled = localStorage.getItem('toki_adult_filter') === 'true';
+        
+        updateAdultToggle();
+        updateSidebarTags();
+    } catch (e) {
+        console.error('Local data load error:', e);
+    }
+}
+
+function saveLocalData() {
+    localStorage.setItem('toki_tags', JSON.stringify(customTags));
+    localStorage.setItem('toki_series_tags', JSON.stringify(seriesTags));
+    localStorage.setItem('toki_calendar', JSON.stringify(calendarData));
+    localStorage.setItem('toki_adult_filter', adultFilterEnabled);
+}
+
+function clearBlobUrls() {
+    activeBlobUrls.forEach(url => URL.revokeObjectURL(url));
+    activeBlobUrls = [];
+}
+
+// ===== 사이드바 =====
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggle = document.querySelector('.sidebar-toggle');
+    
+    if (sidebar) sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('show');
+    if (toggle) toggle.classList.toggle('hidden');
+}
+
+// ===== 테마 =====
+function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('toki_theme', next);
+    
+    const indicator = document.getElementById('themeIndicator');
+    const headerIcon = document.getElementById('headerThemeIcon');
+    const icon = next === 'dark' ? '🌙' : '☀️';
+    
+    if (indicator) indicator.textContent = icon;
+    if (headerIcon) headerIcon.textContent = icon;
+}
+
+function loadSavedTheme() {
+    const saved = localStorage.getItem('toki_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    
+    const icon = saved === 'dark' ? '🌙' : '☀️';
+    const indicator = document.getElementById('themeIndicator');
+    const headerIcon = document.getElementById('headerThemeIcon');
+    
+    if (indicator) indicator.textContent = icon;
+    if (headerIcon) headerIcon.textContent = icon;
+}
+
+// ===== 설정 아코디언 =====
+function toggleSettingsAccordion() {
+    const content = document.getElementById('settingsContent');
+    const icon = document.getElementById('settingsIcon');
+    
+    if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+        if (icon) icon.textContent = '▼';
+    } else {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        if (icon) icon.textContent = '▲';
+    }
+}
+// ===== 라이브러리 로드 =====
 async function refreshDB(forceId = null, silent = false, bypassCache = false) {
     const loader = document.getElementById('pageLoader');
 
@@ -75,7 +166,8 @@ async function refreshDB(forceId = null, silent = false, bypassCache = false) {
             seriesList = response.list;
         }
 
-        renderGrid(seriesList);
+        allSeries = seriesList;
+        renderGrid(allSeries);
         showToast("📚 라이브러리 업데이트 완료");
 
     } catch (e) {
@@ -86,17 +178,18 @@ async function refreshDB(forceId = null, silent = false, bypassCache = false) {
     }
 }
 
+// ===== 그리드 렌더링 =====
 function renderGrid(seriesList) {
-    if (Array.isArray(seriesList)) {
-        allSeries = seriesList;
-    } else {
-        allSeries = [];
-    }
     const grid = document.getElementById('grid');
+    const calendarPage = document.getElementById('calendarPage');
+    
+    if (calendarPage) calendarPage.style.display = 'none';
+    if (grid) grid.style.display = 'grid';
+    
     clearBlobUrls();
     grid.innerHTML = '';
 
-    if (!allSeries || allSeries.length === 0) {
+    if (!seriesList || seriesList.length === 0) {
         grid.innerHTML = '<div class="no-data">저장된 작품이 없습니다.</div>';
         return;
     }
@@ -114,15 +207,22 @@ function renderGrid(seriesList) {
         });
     }, { rootMargin: '200px' });
 
-    allSeries.forEach((series, index) => {
+    seriesList.forEach((series, index) => {
         try {
             const card = document.createElement('div');
             card.className = 'card';
+            card.dataset.index = index;
 
             const meta = series.metadata || {};
             const authors = meta.authors || [];
             const status = meta.status || '';
             const publisher = meta.publisher || '';
+            const isAdult = meta.adult === true;
+            
+            // Adult 필터 적용
+            if (adultFilterEnabled && isAdult) {
+                card.classList.add('hidden');
+            }
             
             let thumb = NO_IMAGE_SVG;
             if (series.thumbnail && series.thumbnail.startsWith("data:image")) {
@@ -175,39 +275,23 @@ function renderGrid(seriesList) {
             console.error("Render Error:", err);
         }
     });
-}
-
-function showToast(msg, duration = 3000) {
-    const toast = document.createElement('div');
-    toast.className = 'toast show';
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
-}
-
-function saveManualConfig() {
-    const url = document.getElementById('configApiUrl').value.trim();
-    const id = document.getElementById('configFolderId').value.trim();
-    const apiKey = document.getElementById('configApiKey')?.value?.trim() || '';
     
-    if (!url || !id) return alert("URL과 Folder ID를 모두 입력해주세요.");
-    
-    API.setConfig(url, id, apiKey);
-    document.getElementById('configModal').style.display = 'none';
-    refreshDB();
+    // 현재 필터 다시 적용
+    applyFilters();
 }
 
-let currentTab = 'all';
-
+// ===== 필터 =====
 function switchTab(tabName) {
     currentTab = tabName;
+    currentTagFilter = null;
     
     document.querySelectorAll('.sidebar-item[data-tab]').forEach(item => {
         item.classList.remove('active');
         if (item.dataset.tab === tabName) item.classList.add('active');
+    });
+    
+    document.querySelectorAll('.sidebar-tag').forEach(tag => {
+        tag.classList.remove('active');
     });
 
     const calPage = document.getElementById('calendarPage');
@@ -220,152 +304,193 @@ function switchTab(tabName) {
         toggleSidebar();
     }
 
-    filterData();
+    applyFilters();
 }
 
 function filterData() {
+    applyFilters();
+}
+
+function applyFilters() {
     const query = document.getElementById('search').value.toLowerCase();
     const cards = document.querySelectorAll('.card');
     
-    cards.forEach((card, index) => {
+    cards.forEach((card) => {
+        const index = parseInt(card.dataset.index);
         const series = allSeries[index];
         if (!series) return;
-        const meta = series.metadata || { authors: [] };
-        const authors = meta.authors || [];
-        const text = (series.name + (authors.join(' '))).toLowerCase();
         
+        const meta = series.metadata || {};
+        const authors = meta.authors || [];
+        const isAdult = meta.adult === true;
+        const text = (series.name + ' ' + authors.join(' ')).toLowerCase();
+        
+        // 텍스트 검색
         const matchText = text.includes(query);
-        const cat = series.category || (series.metadata ? series.metadata.category : 'Unknown');
+        
+        // 카테고리 필터
+        const cat = series.category || meta.category || 'Unknown';
         const matchTab = (currentTab === 'all') || (cat === currentTab);
+        
+        // 태그 필터
+        const sTags = seriesTags[series.id] || [];
+        const matchTag = !currentTagFilter || sTags.includes(currentTagFilter);
+        
+        // Adult 필터
+        const matchAdult = !adultFilterEnabled || !isAdult;
 
-        card.style.display = (matchText && matchTab) ? 'flex' : 'none';
+        if (matchText && matchTab && matchTag && matchAdult) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
     });
 }
 
-function saveActiveSettings() {
-    const domains = {
-        newtoki: document.getElementById('url_newtoki').value.trim() || DEFAULT_DOMAINS.newtoki,
-        manatoki: document.getElementById('url_manatoki').value.trim() || DEFAULT_DOMAINS.manatoki,
-        booktoki: document.getElementById('url_booktoki').value.trim() || DEFAULT_DOMAINS.booktoki
-    };
-    localStorage.setItem('toki_domains', JSON.stringify(domains));
-
-    const folderId = document.getElementById('setting_folderId').value.trim();
-    const deployId = document.getElementById('setting_deployId').value.trim();
-    const apiKey = document.getElementById('setting_apiKey').value.trim();
+// ===== Adult 필터 =====
+function toggleAdultFilter() {
+    adultFilterEnabled = !adultFilterEnabled;
+    saveLocalData();
+    updateAdultToggle();
+    applyFilters();
     
-    if (folderId && deployId) {
-        const apiUrl = `https://script.google.com/macros/s/${deployId}/exec`;
-        API.setConfig(apiUrl, folderId, apiKey);
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+        toggleSidebar();
     }
-
-    const vMode = document.getElementById('pref_2page').checked ? '2page' : '1page';
-    const vCover = document.getElementById('pref_cover').checked;
-    const vRtl = document.getElementById('pref_rtl').checked;
-    const vEngine = document.querySelector('input[name="view_engine"]:checked')?.value || 'legacy';
-
-    localStorage.setItem('toki_v_mode', vMode);
-    localStorage.setItem('toki_v_cover', vCover);
-    localStorage.setItem('toki_v_rtl', vRtl);
-    localStorage.setItem('toki_v_engine', vEngine);
-
-    showToast("✅ 설정이 저장되었습니다.");
-    
-    if(folderId && deployId) refreshDB();
 }
 
-function loadDomains() {
-    const saved = JSON.parse(localStorage.getItem('toki_domains')) || DEFAULT_DOMAINS;
-    const elNew = document.getElementById('url_newtoki');
-    const elMana = document.getElementById('url_manatoki');
-    const elBook = document.getElementById('url_booktoki');
-    
-    if(elNew) elNew.value = saved.newtoki;
-    if(elMana) elMana.value = saved.manatoki;
-    if(elBook) elBook.value = saved.booktoki;
-
-    const elFolder = document.getElementById('setting_folderId');
-    const elDeploy = document.getElementById('setting_deployId');
-    const elApiKey = document.getElementById('setting_apiKey');
-    
-    if (API._config.folderId && elFolder) elFolder.value = API._config.folderId;
-    if (API._config.baseUrl && elDeploy) {
-        const match = API._config.baseUrl.match(/\/s\/([^\/]+)\/exec/);
-        if (match && match[1]) elDeploy.value = match[1];
+function updateAdultToggle() {
+    const toggle = document.getElementById('adultToggle');
+    if (toggle) {
+        if (adultFilterEnabled) {
+            toggle.classList.add('active');
+        } else {
+            toggle.classList.remove('active');
+        }
     }
-    if (API._config.apiKey && elApiKey) elApiKey.value = API._config.apiKey;
-
-    const vMode = localStorage.getItem('toki_v_mode') || '1page';
-    const vCover = (localStorage.getItem('toki_v_cover') === 'true');
-    const vRtl = (localStorage.getItem('toki_v_rtl') === 'true');
-    const vEngine = localStorage.getItem('toki_v_engine') || 'legacy';
-
-    if(document.getElementById('pref_2page')) document.getElementById('pref_2page').checked = (vMode === '2page');
-    if(document.getElementById('pref_cover')) document.getElementById('pref_cover').checked = vCover;
-    if(document.getElementById('pref_rtl')) document.getElementById('pref_rtl').checked = vRtl;
+}
+// ===== 태그 관리 =====
+function showTags() {
+    renderTagsList();
+    document.getElementById('tagsModal').style.display = 'flex';
     
-    const radios = document.getElementsByName('view_engine');
-    for(const r of radios) r.checked = (r.value === vEngine);
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+        toggleSidebar();
+    }
 }
 
-function getDynamicLink(series) {
-    if (series.platformUrl) return series.platformUrl;
-    
-    const contentId = series.sourceId;
-    let cat = series.category || (series.metadata ? series.metadata.category : '');
-
-    if (!cat) {
-        if ((series.name || "").includes("북토끼")) cat = "Novel";
-        else if ((series.name || "").includes("마나토끼")) cat = "Manga";
-        else cat = "Webtoon";
-    }
-
-    const saved = JSON.parse(localStorage.getItem('toki_domains')) || DEFAULT_DOMAINS;
-    
-    let baseUrl = `https://newtoki${saved.newtoki}.com`;
-    let path = "/webtoon/";
-
-    if (cat === "Novel") { 
-        baseUrl = `https://booktoki${saved.booktoki}.com`; 
-        path = "/novel/"; 
-    } else if (cat === "Manga") { 
-        baseUrl = `https://manatoki${saved.manatoki}.net`; 
-        path = "/comic/"; 
-    }
-
-    return contentId ? (baseUrl + path + contentId) : "#";
+function closeTagsModal() {
+    document.getElementById('tagsModal').style.display = 'none';
 }
 
+function renderTagsList() {
+    const list = document.getElementById('tagsList');
+    list.innerHTML = '';
+    
+    if (customTags.length === 0) {
+        list.innerHTML = '<div style="color: var(--text-tertiary); font-size: 13px;">태그가 없습니다. 새 태그를 추가하세요.</div>';
+        return;
+    }
+    
+    customTags.forEach(tag => {
+        const item = document.createElement('div');
+        item.className = 'tag-item';
+        item.innerHTML = `
+            <span>#${tag}</span>
+            <span class="tag-delete" onclick="deleteTag('${tag}')">×</span>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function createTag() {
+    const input = document.getElementById('newTagInput');
+    const name = input.value.trim().replace(/^#/, '');
+    
+    if (!name) return;
+    if (customTags.includes(name)) {
+        showToast('이미 존재하는 태그입니다.');
+        return;
+    }
+    
+    customTags.push(name);
+    saveLocalData();
+    updateSidebarTags();
+    renderTagsList();
+    input.value = '';
+    showToast(`✅ 태그 "${name}" 추가됨`);
+}
+
+function deleteTag(name) {
+    if (!confirm(`"${name}" 태그를 삭제하시겠습니까?`)) return;
+    
+    customTags = customTags.filter(t => t !== name);
+    
+    // 시리즈에서도 제거
+    Object.keys(seriesTags).forEach(id => {
+        seriesTags[id] = seriesTags[id].filter(t => t !== name);
+    });
+    
+    saveLocalData();
+    updateSidebarTags();
+    renderTagsList();
+    showToast(`🗑️ 태그 "${name}" 삭제됨`);
+}
+
+function updateSidebarTags() {
+    const section = document.getElementById('tagSection');
+    const divider = document.getElementById('tagDivider');
+    const list = document.getElementById('sidebarTagList');
+    
+    if (customTags.length === 0) {
+        if (section) section.style.display = 'none';
+        if (divider) divider.style.display = 'none';
+        return;
+    }
+    
+    if (section) section.style.display = 'block';
+    if (divider) divider.style.display = 'block';
+    
+    list.innerHTML = '';
+    customTags.forEach(tag => {
+        const el = document.createElement('span');
+        el.className = 'sidebar-tag' + (currentTagFilter === tag ? ' active' : '');
+        el.textContent = `#${tag}`;
+        el.onclick = () => filterByTag(tag);
+        list.appendChild(el);
+    });
+}
+
+function filterByTag(tag) {
+    if (currentTagFilter === tag) {
+        currentTagFilter = null;
+    } else {
+        currentTagFilter = tag;
+    }
+    
+    currentTab = 'all';
+    document.querySelectorAll('.sidebar-item[data-tab]').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.tab === 'all') item.classList.add('active');
+    });
+    
+    updateSidebarTags();
+    applyFilters();
+    
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+        toggleSidebar();
+    }
+}
+
+// ===== 썸네일 =====
 async function loadNextThumbnail() {
     if (isLoadingThumbnail || thumbnailQueue.length === 0) return;
     
     isLoadingThumbnail = true;
     const { img, url } = thumbnailQueue.shift();
-    
-    if (window.tokiBridge && window.tokiBridge.isConnected && window.tokiBridge.fetch && url.includes('googleusercontent.com')) {
-        try {
-            const fileIdMatch = url.match(/\/d\/([^=]+)/);
-            if (fileIdMatch) {
-                const response = await window.tokiBridge.fetch(url, { method: 'GET', responseType: 'blob' });
-                if (response) {
-                    const blob = new Blob([response]);
-                    const blobUrl = URL.createObjectURL(blob);
-                    activeBlobUrls.push(blobUrl);
-                    img.src = blobUrl;
-                    img.onload = () => {
-                        img.dataset.loaded = 'true';
-                        isLoadingThumbnail = false;
-                        setTimeout(loadNextThumbnail, 50);
-                    };
-                    img.onerror = () => {
-                        isLoadingThumbnail = false;
-                        setTimeout(loadNextThumbnail, THUMBNAIL_DELAY_MS);
-                    };
-                    return;
-                }
-            }
-        } catch (e) {}
-    }
     
     img.onload = () => {
         img.dataset.loaded = 'true';
@@ -398,14 +523,235 @@ function handleThumbnailError(img, fallbackSvg) {
     }
 }
 
-function toggleSettings() {
-    const el = document.getElementById('domainPanel');
-    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+// ===== Toast =====
+function showToast(msg, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast show';
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+// ===== Detail Modal =====
+window.currentDetailIndex = -1;
+window.currentDetailSeries = null;
+
+function openDetailModal(index) {
+    const series = allSeries[index];
+    if (!series) return;
+
+    const modal = document.getElementById('detailModal');
+    if (!modal) return;
+
+    const meta = series.metadata || {};
+    const authors = meta.authors || [];
+    const description = meta.description || '';
+    const sTags = seriesTags[series.id] || [];
+
+    document.getElementById('detailTitle').textContent = series.name || '제목 없음';
+
+    // 커버
+    const coverImg = document.getElementById('detailCover');
+    const noImageEl = document.getElementById('detailCoverNoImage');
+    
+    let thumb = '';
+    if (series.thumbnail && series.thumbnail.startsWith("data:image")) {
+        thumb = series.thumbnail;
+    } else if (series.thumbnailId) {
+        thumb = `https://lh3.googleusercontent.com/d/${series.thumbnailId}=s400`;
+    } else if (series.thumbnail && series.thumbnail.startsWith("http")) {
+        thumb = series.thumbnail;
+    }
+    
+    if (thumb) {
+        coverImg.src = thumb;
+        coverImg.style.display = 'block';
+        if (noImageEl) noImageEl.style.display = 'none';
+    } else {
+        coverImg.style.display = 'none';
+        if (noImageEl) noImageEl.style.display = 'flex';
+    }
+
+    // 태그 (제목 밑)
+    const tagsEl = document.getElementById('detailTags');
+    if (tagsEl) {
+        if (sTags.length > 0) {
+            tagsEl.innerHTML = sTags.map(t => `<span class="detail-tag">#${t}</span>`).join('');
+            tagsEl.style.display = 'flex';
+        } else {
+            tagsEl.innerHTML = '';
+            tagsEl.style.display = 'none';
+        }
+    }
+
+    // 정보
+    document.getElementById('detailInfoTitle').textContent = series.name || '-';
+    document.getElementById('detailInfoAuthor').textContent = authors.join(', ') || '작가 미상';
+    document.getElementById('detailInfoStatus').textContent = meta.status || '-';
+    document.getElementById('detailInfoPlatform').textContent = meta.publisher || '-';
+    
+    // 작품 소개
+    const descEl = document.getElementById('detailInfoDescription');
+    const descWrapper = document.getElementById('descWrapper');
+    
+    if (descEl) {
+        descEl.textContent = description || '소개 정보가 없습니다.';
+    }
+    if (descWrapper) {
+        descWrapper.classList.remove('expanded');
+    }
+
+    // Drive 링크
+    const driveLink = document.getElementById('detailDriveLink');
+    if (driveLink && series.id) {
+        driveLink.href = `https://drive.google.com/drive/u/0/folders/${series.id}`;
+    }
+
+    // 회차 숨김
+    document.getElementById('detailEpisodes').style.display = 'none';
+
+    window.currentDetailIndex = index;
+    window.currentDetailSeries = series;
+
+    modal.style.display = 'flex';
 }
 
+function closeDetailModal() {
+    const modal = document.getElementById('detailModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function toggleDescription() {
+    const wrapper = document.getElementById('descWrapper');
+    if (wrapper) {
+        wrapper.classList.toggle('expanded');
+    }
+}
+
+function toggleDetailEpisodes() {
+    const episodes = document.getElementById('detailEpisodes');
+    const series = window.currentDetailSeries;
+
+    if (!episodes || !series) return;
+
+    if (episodes.style.display === 'none') {
+        episodes.style.display = 'block';
+        loadDetailEpisodes(series.id, series.name);
+    } else {
+        episodes.style.display = 'none';
+    }
+}
+
+async function loadDetailEpisodes(seriesId, title) {
+    const listEl = document.getElementById('detailEpisodeList');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="detail-episode-loading">로딩 중...</div>';
+
+    try {
+        let books = await API.request('view_get_books', { seriesId: seriesId });
+
+        if (!books || books.length === 0) {
+            listEl.innerHTML = '<div class="detail-episode-loading">캐시 재생성 중...</div>';
+            books = await API.request('view_refresh_cache', { seriesId: seriesId });
+        }
+
+        if (!books || books.length === 0) {
+            listEl.innerHTML = '<div class="detail-episode-loading">회차가 없습니다</div>';
+            return;
+        }
+
+        if (typeof updateCurrentBookList === 'function') {
+            updateCurrentBookList(books);
+        }
+
+        _currentBooks = books;
+        _currentSeriesId = seriesId;
+        _currentSeriesTitle = title;
+
+        listEl.innerHTML = '';
+        books.forEach((book, index) => {
+            const item = document.createElement('div');
+            item.className = 'detail-episode-item';
+            item.innerHTML = `<span>${book.name}</span>`;
+            item.onclick = () => {
+                closeDetailModal();
+                if (typeof loadViewer === 'function') {
+                    loadViewer(index);
+                }
+            };
+            listEl.appendChild(item);
+        });
+    } catch (e) {
+        listEl.innerHTML = `<div class="detail-episode-loading" style="color:var(--danger);">오류: ${e.message}</div>`;
+    }
+}
+
+async function refreshDetailEpisodes() {
+    const series = window.currentDetailSeries;
+    if (!series) return;
+    
+    const listEl = document.getElementById('detailEpisodeList');
+    listEl.innerHTML = '<div class="detail-episode-loading">새로고침 중...</div>';
+    
+    try {
+        const books = await API.request('view_refresh_cache', { seriesId: series.id });
+        
+        _currentBooks = books || [];
+        _currentSeriesId = series.id;
+        _currentSeriesTitle = series.name;
+        
+        if (!books || books.length === 0) {
+            listEl.innerHTML = '<div class="detail-episode-loading">회차가 없습니다</div>';
+            return;
+        }
+        
+        listEl.innerHTML = '';
+        books.forEach((book, index) => {
+            const item = document.createElement('div');
+            item.className = 'detail-episode-item';
+            item.innerHTML = `<span>${book.name}</span>`;
+            item.onclick = () => {
+                closeDetailModal();
+                if (typeof loadViewer === 'function') {
+                    loadViewer(index);
+                }
+            };
+            listEl.appendChild(item);
+        });
+        
+        showToast('✅ 회차 목록 새로고침 완료');
+    } catch (e) {
+        listEl.innerHTML = `<div class="detail-episode-loading" style="color:var(--danger);">오류: ${e.message}</div>`;
+    }
+}
+
+function openPlatformSite() {
+    const series = window.currentDetailSeries;
+    if (!series) return;
+
+    const url = series.platformUrl || getDynamicLink(series);
+    if (url && url !== '#') {
+        window.open(url, '_blank');
+    } else {
+        showToast('플랫폼 링크가 설정되지 않았습니다.');
+    }
+}
+
+function openEditFromDetail() {
+    const index = window.currentDetailIndex;
+    if (index >= 0) {
+        closeDetailModal();
+        openEditModal(index);
+    }
+}
+// ===== Edit Modal =====
 let editingSeriesIndex = -1;
 let editingSeriesId = '';
 let editCoverFile = null;
+let editSelectedTags = [];
 
 function openEditModal(index) {
     const series = allSeries[index];
@@ -414,6 +760,7 @@ function openEditModal(index) {
     editingSeriesIndex = index;
     editingSeriesId = series.id;
     editCoverFile = null;
+    editSelectedTags = seriesTags[series.id] ? [...seriesTags[series.id]] : [];
 
     const meta = series.metadata || {};
 
@@ -426,7 +773,9 @@ function openEditModal(index) {
     document.getElementById('editUrl').value = series.sourceUrl || '';
     document.getElementById('editPlatformUrl').value = series.platformUrl || '';
     document.getElementById('editDescription').value = meta.description || '';
+    document.getElementById('editAdult').checked = meta.adult === true;
 
+    // 커버
     const preview = document.getElementById('editCoverPreview');
     const noImage = document.getElementById('editCoverNoImage');
     const filenameEl = document.getElementById('editCoverFilename');
@@ -441,6 +790,9 @@ function openEditModal(index) {
         noImage.style.display = 'flex';
     }
 
+    // 태그
+    renderEditTags();
+
     document.getElementById('editModal').style.display = 'flex';
 }
 
@@ -449,6 +801,44 @@ function closeEditModal() {
     editingSeriesIndex = -1;
     editingSeriesId = '';
     editCoverFile = null;
+    editSelectedTags = [];
+}
+
+function renderEditTags() {
+    const container = document.getElementById('editTagsContainer');
+    const selectEl = document.getElementById('editTagsSelect');
+    
+    // 선택된 태그
+    container.innerHTML = '';
+    editSelectedTags.forEach(tag => {
+        const el = document.createElement('span');
+        el.className = 'edit-tag';
+        el.innerHTML = `#${tag} <span class="edit-tag-remove" onclick="removeEditTag('${tag}')">×</span>`;
+        container.appendChild(el);
+    });
+    
+    // 선택 가능한 태그
+    selectEl.innerHTML = '';
+    const available = customTags.filter(t => !editSelectedTags.includes(t));
+    available.forEach(tag => {
+        const el = document.createElement('span');
+        el.className = 'edit-tag-option';
+        el.textContent = `#${tag}`;
+        el.onclick = () => addEditTag(tag);
+        selectEl.appendChild(el);
+    });
+}
+
+function addEditTag(tag) {
+    if (!editSelectedTags.includes(tag)) {
+        editSelectedTags.push(tag);
+        renderEditTags();
+    }
+}
+
+function removeEditTag(tag) {
+    editSelectedTags = editSelectedTags.filter(t => t !== tag);
+    renderEditTags();
 }
 
 function handleCoverSelect(event) {
@@ -492,7 +882,8 @@ async function saveEditInfo() {
                 status: document.getElementById('editStatus').value,
                 category: document.getElementById('editCategory').value,
                 publisher: document.getElementById('editPublisher').value,
-                description: document.getElementById('editDescription').value.trim()
+                description: document.getElementById('editDescription').value.trim(),
+                adult: document.getElementById('editAdult').checked
             },
             url: document.getElementById('editUrl').value.trim(),
             platformUrl: document.getElementById('editPlatformUrl').value.trim(),
@@ -517,6 +908,12 @@ async function saveEditInfo() {
             });
         }
 
+        // 태그 저장 (로컬)
+        seriesTags[editingSeriesId] = editSelectedTags;
+        saveLocalData();
+        updateSidebarTags();
+
+        // 로컬 데이터 업데이트
         if (editingSeriesIndex >= 0 && allSeries[editingSeriesIndex]) {
             const series = allSeries[editingSeriesIndex];
             series.name = infoData.title;
@@ -530,7 +927,8 @@ async function saveEditInfo() {
                 status: infoData.metadata.status,
                 publisher: infoData.metadata.publisher,
                 category: infoData.metadata.category,
-                description: infoData.metadata.description
+                description: infoData.metadata.description,
+                adult: infoData.metadata.adult
             };
         }
 
@@ -544,7 +942,7 @@ async function saveEditInfo() {
         showToast(`❌ 저장 실패: ${e.message}`, 5000);
     } finally {
         if (saveBtn) {
-            saveBtn.textContent = '저장';
+            saveBtn.textContent = '💾 저장';
             saveBtn.disabled = false;
         }
     }
@@ -559,6 +957,7 @@ function fileToBase64(file) {
     });
 }
 
+// ===== Episode Modal (기존 호환) =====
 let _currentBooks = [];
 let _currentSeriesId = '';
 let _currentSeriesTitle = '';
@@ -673,223 +1072,400 @@ function openEpisodeEdit(index) {
         showToast(`❌ 수정 실패: ${e.message}`, 5000);
     });
 }
-
-window.currentDetailIndex = -1;
-window.currentDetailSeries = null;
-
-function openDetailModal(index) {
-    const series = allSeries[index];
-    if (!series) return;
-
-    const modal = document.getElementById('detailModal');
-    if (!modal) return;
-
-    const meta = series.metadata || {};
-    const authors = meta.authors || [];
-    const description = meta.description || '';
-
-    document.getElementById('detailTitle').textContent = series.name || '제목 없음';
-
-    const coverImg = document.getElementById('detailCover');
-    const noImageEl = document.getElementById('detailCoverNoImage');
+// ===== 캘린더 =====
+function showCalendar() {
+    document.getElementById('calendarModal').style.display = 'flex';
+    renderCalendar();
+    updateCalendarStats();
     
-    let thumb = '';
-    if (series.thumbnail && series.thumbnail.startsWith("data:image")) {
-        thumb = series.thumbnail;
-    } else if (series.thumbnailId) {
-        thumb = `https://lh3.googleusercontent.com/d/${series.thumbnailId}=s400`;
-    } else if (series.thumbnail && series.thumbnail.startsWith("http")) {
-        thumb = series.thumbnail;
-    }
-    
-    if (thumb) {
-        coverImg.src = thumb;
-        coverImg.style.display = 'block';
-        if (noImageEl) noImageEl.style.display = 'none';
-    } else {
-        coverImg.style.display = 'none';
-        if (noImageEl) noImageEl.style.display = 'flex';
-    }
-
-    document.getElementById('detailInfoTitle').textContent = series.name || '-';
-    document.getElementById('detailInfoAuthor').textContent = authors.join(', ') || '작가 미상';
-    document.getElementById('detailInfoStatus').textContent = meta.status || '-';
-    document.getElementById('detailInfoPlatform').textContent = meta.publisher || '-';
-    
-    const descEl = document.getElementById('detailInfoDescription');
-    const descWrapper = document.querySelector('.description-wrapper');
-    const descToggle = document.getElementById('descToggleBtn');
-    
-    if (descEl) {
-        descEl.textContent = description || '소개 정보가 없습니다.';
-    }
-    if (descWrapper) {
-        descWrapper.classList.remove('expanded');
-    }
-
-    const driveLink = document.getElementById('detailDriveLink');
-    if (driveLink && series.id) {
-        driveLink.href = `https://drive.google.com/drive/u/0/folders/${series.id}`;
-    }
-
-    document.getElementById('detailEpisodes').style.display = 'none';
-
-    window.currentDetailIndex = index;
-    window.currentDetailSeries = series;
-
-    modal.style.display = 'flex';
-}
-
-function closeDetailModal() {
-    const modal = document.getElementById('detailModal');
-    if (modal) modal.style.display = 'none';
-}
-
-function toggleDetailEpisodes() {
-    const episodes = document.getElementById('detailEpisodes');
-    const series = window.currentDetailSeries;
-
-    if (!episodes || !series) return;
-
-    if (episodes.style.display === 'none') {
-        episodes.style.display = 'block';
-        loadDetailEpisodes(series.id, series.name);
-    } else {
-        episodes.style.display = 'none';
-    }
-}
-
-async function loadDetailEpisodes(seriesId, title) {
-    const listEl = document.getElementById('detailEpisodeList');
-    if (!listEl) return;
-
-    listEl.innerHTML = '<div class="detail-episode-loading">로딩 중...</div>';
-
-    try {
-        let books = await API.request('view_get_books', { seriesId: seriesId });
-
-        if (!books || books.length === 0) {
-            listEl.innerHTML = '<div class="detail-episode-loading">캐시 재생성 중...</div>';
-            books = await API.request('view_refresh_cache', { seriesId: seriesId });
-        }
-
-        if (!books || books.length === 0) {
-            listEl.innerHTML = '<div class="detail-episode-loading">회차가 없습니다</div>';
-            return;
-        }
-
-        if (typeof updateCurrentBookList === 'function') {
-            updateCurrentBookList(books);
-        }
-
-        _currentBooks = books;
-        _currentSeriesId = seriesId;
-        _currentSeriesTitle = title;
-
-        listEl.innerHTML = '';
-        books.forEach((book, index) => {
-            const item = document.createElement('div');
-            item.className = 'detail-episode-item';
-            item.innerHTML = `<span>${book.name}</span>`;
-            item.onclick = () => {
-                closeDetailModal();
-                if (typeof loadViewer === 'function') {
-                    loadViewer(index);
-                }
-            };
-            listEl.appendChild(item);
-        });
-    } catch (e) {
-        listEl.innerHTML = `<div class="detail-episode-loading" style="color:var(--danger);">오류: ${e.message}</div>`;
-    }
-}
-
-function openEditFromDetail() {
-    const index = window.currentDetailIndex;
-    if (index >= 0) {
-        closeDetailModal();
-        openEditModal(index);
-    }
-}
-
-function openPlatformSite() {
-    const series = window.currentDetailSeries;
-    if (!series) return;
-
-    const url = series.platformUrl || getDynamicLink(series);
-    if (url && url !== '#') {
-        window.open(url, '_blank');
-    }
-}
-
-function toggleDescription() {
-    const wrapper = document.getElementById('descWrapper');
-    if (wrapper) {
-        wrapper.classList.toggle('expanded');
-    }
-}
-
-function toggleDescription() {
-    const wrapper = document.getElementById('descWrapper');
-    if (wrapper) {
-        wrapper.classList.toggle('expanded');
-    }
-}
-
-function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    const toggle = document.querySelector('.sidebar-toggle');
-    
-    if (sidebar) sidebar.classList.toggle('open');
-    if (overlay) overlay.classList.toggle('show');
-    if (toggle) toggle.classList.toggle('hidden');
-}
-
-function toggleTheme() {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('toki_theme', next);
-    
-    const indicator = document.getElementById('themeIndicator');
-    const headerIcon = document.getElementById('headerThemeIcon');
-    const icon = next === 'dark' ? '🌙' : '☀️';
-    
-    if (indicator) indicator.textContent = icon;
-    if (headerIcon) headerIcon.textContent = icon;
-}
-
-function toggleSettingsAccordion() {
-    const content = document.getElementById('settingsContent');
-    const icon = document.getElementById('settingsIcon');
-    
-    if (content.style.maxHeight) {
-        content.style.maxHeight = null;
-        if (icon) icon.textContent = '▼';
-    } else {
-        content.style.maxHeight = content.scrollHeight + 'px';
-        if (icon) icon.textContent = '▲';
+    if (sidebar && sidebar.classList.contains('open')) {
+        toggleSidebar();
     }
 }
 
-function loadSavedTheme() {
-    const saved = localStorage.getItem('toki_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
-    
-    const icon = saved === 'dark' ? '🌙' : '☀️';
-    const indicator = document.getElementById('themeIndicator');
-    const headerIcon = document.getElementById('headerThemeIcon');
-    
-    if (indicator) indicator.textContent = icon;
-    if (headerIcon) headerIcon.textContent = icon;
+function closeCalendarModal() {
+    document.getElementById('calendarModal').style.display = 'none';
 }
 
-window.addEventListener('DOMContentLoaded', loadSavedTheme);
-window.toggleSidebar = toggleSidebar;
-window.toggleTheme = toggleTheme;
-window.toggleSettingsAccordion = toggleSettingsAccordion;
+function changeMonth(delta) {
+    currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + delta);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const title = document.getElementById('calendarTitle');
+    
+    const year = currentCalendarMonth.getFullYear();
+    const month = currentCalendarMonth.getMonth();
+    
+    title.textContent = `${year}년 ${month + 1}월`;
+    
+    grid.innerHTML = '';
+    
+    // 요일 헤더
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    days.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-header';
+        el.textContent = d;
+        grid.appendChild(el);
+    });
+    
+    // 날짜
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+    const today = new Date();
+    
+    // 이전 달
+    const prevLastDay = new Date(year, month, 0).getDate();
+    for (let i = startDay - 1; i >= 0; i--) {
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.textContent = prevLastDay - i;
+        grid.appendChild(el);
+    }
+    
+    // 현재 달
+    for (let i = 1; i <= totalDays; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day';
+        el.textContent = i;
+        
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        
+        if (calendarData[dateStr] && calendarData[dateStr].length > 0) {
+            el.classList.add('has-record');
+        }
+        
+        if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === i) {
+            el.classList.add('today');
+        }
+        
+        if (selectedCalendarDate === dateStr) {
+            el.classList.add('selected');
+        }
+        
+        el.onclick = () => selectCalendarDate(dateStr);
+        grid.appendChild(el);
+    }
+    
+    // 다음 달
+    const remaining = 42 - (startDay + totalDays);
+    for (let i = 1; i <= remaining; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.textContent = i;
+        grid.appendChild(el);
+    }
+}
+
+function selectCalendarDate(dateStr) {
+    selectedCalendarDate = dateStr;
+    renderCalendar();
+    renderCalendarRecords(dateStr);
+}
+
+function renderCalendarRecords(dateStr) {
+    const dateEl = document.getElementById('recordsDate');
+    const listEl = document.getElementById('recordsList');
+    
+    const [y, m, d] = dateStr.split('-');
+    dateEl.textContent = `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
+    
+    const records = calendarData[dateStr] || [];
+    listEl.innerHTML = '';
+    
+    if (records.length === 0) {
+        listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-tertiary);">기록이 없습니다</div>';
+        return;
+    }
+    
+    records.forEach((record, idx) => {
+        const series = allSeries.find(s => s.id === record.seriesId);
+        const name = series ? series.name : '알 수 없는 작품';
+        
+        const statusIcon = record.status === '완독' ? '✅' : record.status === '포기' ? '❌' : '📖';
+        
+        const item = document.createElement('div');
+        item.className = 'record-item';
+        item.innerHTML = `
+            <div class="record-title">${statusIcon} ${name}</div>
+            <div class="record-meta">${record.progress || 0}% ${record.status} ${record.memo ? '- ' + record.memo : ''}</div>
+        `;
+        listEl.appendChild(item);
+    });
+}
+
+function updateCalendarStats() {
+    let completed = 0, dropped = 0, reading = 0;
+    
+    Object.values(calendarData).forEach(records => {
+        records.forEach(r => {
+            if (r.status === '완독') completed++;
+            else if (r.status === '포기') dropped++;
+            else reading++;
+        });
+    });
+    
+    document.getElementById('statCompleted').textContent = completed;
+    document.getElementById('statDropped').textContent = dropped;
+    document.getElementById('statReading').textContent = reading;
+    document.getElementById('statTotal').textContent = completed + dropped + reading;
+}
+
+function addCalendarRecord() {
+    if (!selectedCalendarDate) {
+        showToast('날짜를 먼저 선택하세요');
+        return;
+    }
+    
+    // 간단한 추가 (나중에 모달로 확장 가능)
+    const seriesName = prompt('작품 이름:');
+    if (!seriesName) return;
+    
+    const series = allSeries.find(s => s.name.includes(seriesName));
+    if (!series) {
+        showToast('작품을 찾을 수 없습니다');
+        return;
+    }
+    
+    const status = prompt('상태 (읽는중/완독/포기):', '읽는중');
+    const progress = parseInt(prompt('진행률 (0-100):', '0')) || 0;
+    const memo = prompt('메모 (선택):') || '';
+    
+    if (!calendarData[selectedCalendarDate]) {
+        calendarData[selectedCalendarDate] = [];
+    }
+    
+    calendarData[selectedCalendarDate].push({
+        seriesId: series.id,
+        status: status,
+        progress: progress,
+        memo: memo
+    });
+    
+    saveLocalData();
+    renderCalendar();
+    renderCalendarRecords(selectedCalendarDate);
+    updateCalendarStats();
+    showToast('✅ 기록 추가됨');
+}
+
+// ===== 백업/복원 =====
+function showBackupRestore() {
+    document.getElementById('backupModal').style.display = 'flex';
+    
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+        toggleSidebar();
+    }
+}
+
+function closeBackupModal() {
+    document.getElementById('backupModal').style.display = 'none';
+}
+
+function downloadBackup() {
+    const data = {
+        version: VIEWER_VERSION,
+        exportDate: new Date().toISOString(),
+        tags: customTags,
+        seriesTags: seriesTags,
+        calendar: calendarData,
+        settings: {
+            adultFilter: adultFilterEnabled,
+            theme: localStorage.getItem('toki_theme'),
+            domains: JSON.parse(localStorage.getItem('toki_domains') || '{}')
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `toki_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('📥 백업 다운로드 완료');
+}
+
+function uploadBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (data.tags) customTags = data.tags;
+            if (data.seriesTags) seriesTags = data.seriesTags;
+            if (data.calendar) calendarData = data.calendar;
+            if (data.settings) {
+                if (data.settings.adultFilter !== undefined) {
+                    adultFilterEnabled = data.settings.adultFilter;
+                }
+                if (data.settings.theme) {
+                    localStorage.setItem('toki_theme', data.settings.theme);
+                    loadSavedTheme();
+                }
+                if (data.settings.domains) {
+                    localStorage.setItem('toki_domains', JSON.stringify(data.settings.domains));
+                    loadDomains();
+                }
+            }
+            
+            saveLocalData();
+            updateSidebarTags();
+            updateAdultToggle();
+            applyFilters();
+            
+            showToast('📤 백업 복원 완료');
+        } catch (err) {
+            showToast('❌ 백업 파일 오류');
+        }
+    };
+    reader.readAsText(file);
+}
+
+async function syncToDrive() {
+    showToast('☁️ Drive 동기화 중...');
+    // TODO: GAS와 연동하여 Drive에 저장
+    showToast('아직 구현되지 않았습니다');
+}
+
+async function syncFromDrive() {
+    showToast('☁️ Drive에서 불러오는 중...');
+    // TODO: GAS와 연동하여 Drive에서 불러오기
+    showToast('아직 구현되지 않았습니다');
+}
+
+// ===== 기타 함수들 =====
+function showFavorites() {
+    showToast('🚧 준비 중인 기능입니다');
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.classList.contains('open')) {
+        toggleSidebar();
+    }
+}
+
+function toggleSettings() {
+    const el = document.getElementById('domainPanel');
+    if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+function getDynamicLink(series) {
+    if (series.platformUrl) return series.platformUrl;
+    
+    const contentId = series.sourceId;
+    let cat = series.category || (series.metadata ? series.metadata.category : '');
+
+    if (!cat) {
+        if ((series.name || "").includes("북토끼")) cat = "Novel";
+        else if ((series.name || "").includes("마나토끼")) cat = "Manga";
+        else cat = "Webtoon";
+    }
+
+    const saved = JSON.parse(localStorage.getItem('toki_domains')) || DEFAULT_DOMAINS;
+    
+    let baseUrl = `https://newtoki${saved.newtoki}.com`;
+    let path = "/webtoon/";
+
+    if (cat === "Novel") { 
+        baseUrl = `https://booktoki${saved.booktoki}.com`; 
+        path = "/novel/"; 
+    } else if (cat === "Manga") { 
+        baseUrl = `https://manatoki${saved.manatoki}.net`; 
+        path = "/comic/"; 
+    }
+
+    return contentId ? (baseUrl + path + contentId) : "#";
+}
+
+function saveActiveSettings() {
+    const domains = {
+        newtoki: document.getElementById('url_newtoki').value.trim() || DEFAULT_DOMAINS.newtoki,
+        manatoki: document.getElementById('url_manatoki').value.trim() || DEFAULT_DOMAINS.manatoki,
+        booktoki: document.getElementById('url_booktoki').value.trim() || DEFAULT_DOMAINS.booktoki
+    };
+    localStorage.setItem('toki_domains', JSON.stringify(domains));
+
+    const folderId = document.getElementById('setting_folderId').value.trim();
+    const deployId = document.getElementById('setting_deployId').value.trim();
+    const apiKey = document.getElementById('setting_apiKey').value.trim();
+    
+    if (folderId && deployId) {
+        const apiUrl = `https://script.google.com/macros/s/${deployId}/exec`;
+        API.setConfig(apiUrl, folderId, apiKey);
+    }
+
+    const vMode = document.getElementById('pref_2page').checked ? '2page' : '1page';
+    const vCover = document.getElementById('pref_cover').checked;
+    const vRtl = document.getElementById('pref_rtl').checked;
+    const vEngine = document.querySelector('input[name="view_engine"]:checked')?.value || 'legacy';
+
+    localStorage.setItem('toki_v_mode', vMode);
+    localStorage.setItem('toki_v_cover', vCover);
+    localStorage.setItem('toki_v_rtl', vRtl);
+    localStorage.setItem('toki_v_engine', vEngine);
+
+    showToast("✅ 설정이 저장되었습니다.");
+    
+    if(folderId && deployId) refreshDB();
+}
+
+function loadDomains() {
+    const saved = JSON.parse(localStorage.getItem('toki_domains')) || DEFAULT_DOMAINS;
+    const elNew = document.getElementById('url_newtoki');
+    const elMana = document.getElementById('url_manatoki');
+    const elBook = document.getElementById('url_booktoki');
+    
+    if(elNew) elNew.value = saved.newtoki;
+    if(elMana) elMana.value = saved.manatoki;
+    if(elBook) elBook.value = saved.booktoki;
+
+    const elFolder = document.getElementById('setting_folderId');
+    const elDeploy = document.getElementById('setting_deployId');
+    const elApiKey = document.getElementById('setting_apiKey');
+    
+    if (API._config.folderId && elFolder) elFolder.value = API._config.folderId;
+    if (API._config.baseUrl && elDeploy) {
+        const match = API._config.baseUrl.match(/\/s\/([^\/]+)\/exec/);
+        if (match && match[1]) elDeploy.value = match[1];
+    }
+    if (API._config.apiKey && elApiKey) elApiKey.value = API._config.apiKey;
+
+    const vMode = localStorage.getItem('toki_v_mode') || '1page';
+    const vCover = (localStorage.getItem('toki_v_cover') === 'true');
+    const vRtl = (localStorage.getItem('toki_v_rtl') === 'true');
+    const vEngine = localStorage.getItem('toki_v_engine') || 'legacy';
+
+    if(document.getElementById('pref_2page')) document.getElementById('pref_2page').checked = (vMode === '2page');
+    if(document.getElementById('pref_cover')) document.getElementById('pref_cover').checked = vCover;
+    if(document.getElementById('pref_rtl')) document.getElementById('pref_rtl').checked = vRtl;
+    
+    const radios = document.getElementsByName('view_engine');
+    for(const r of radios) r.checked = (r.value === vEngine);
+}
+
+function saveManualConfig() {
+    const url = document.getElementById('configApiUrl').value.trim();
+    const id = document.getElementById('configFolderId').value.trim();
+    const apiKey = document.getElementById('configApiKey')?.value?.trim() || '';
+    
+    if (!url || !id) return alert("URL과 Folder ID를 모두 입력해주세요.");
+    
+    API.setConfig(url, id, apiKey);
+    document.getElementById('configModal').style.display = 'none';
+    refreshDB();
+}
+
+// ===== Window 등록 =====
 window.refreshDB = refreshDB;
 window.toggleSettings = toggleSettings;
 window.switchTab = switchTab;
@@ -912,6 +1488,29 @@ window.openDetailModal = openDetailModal;
 window.closeDetailModal = closeDetailModal;
 window.toggleDetailEpisodes = toggleDetailEpisodes;
 window.loadDetailEpisodes = loadDetailEpisodes;
+window.refreshDetailEpisodes = refreshDetailEpisodes;
 window.openEditFromDetail = openEditFromDetail;
 window.openPlatformSite = openPlatformSite;
 window.toggleDescription = toggleDescription;
+window.toggleSidebar = toggleSidebar;
+window.toggleTheme = toggleTheme;
+window.toggleSettingsAccordion = toggleSettingsAccordion;
+window.toggleAdultFilter = toggleAdultFilter;
+window.showTags = showTags;
+window.closeTagsModal = closeTagsModal;
+window.createTag = createTag;
+window.deleteTag = deleteTag;
+window.filterByTag = filterByTag;
+window.addEditTag = addEditTag;
+window.removeEditTag = removeEditTag;
+window.showCalendar = showCalendar;
+window.closeCalendarModal = closeCalendarModal;
+window.changeMonth = changeMonth;
+window.addCalendarRecord = addCalendarRecord;
+window.showBackupRestore = showBackupRestore;
+window.closeBackupModal = closeBackupModal;
+window.downloadBackup = downloadBackup;
+window.uploadBackup = uploadBackup;
+window.syncToDrive = syncToDrive;
+window.syncFromDrive = syncFromDrive;
+window.showFavorites = showFavorites;
