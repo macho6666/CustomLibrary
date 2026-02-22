@@ -257,7 +257,7 @@ function renderGrid(seriesList) {
 
             card.innerHTML = 
                 '<div class="thumb-wrapper">' +
-                    '<img src="' + NO_IMAGE_SVG + '" data-thumb="' + thumb + '" class="thumb" loading="lazy" onerror="handleThumbnailError(this, \'' + NO_IMAGE_SVG + '\')" onload="this.dataset.loaded=\'true\'">' +
+                   '<img src="' + NO_IMAGE_SVG + '" data-thumb="' + thumb + '" class="thumb" loading="lazy" onerror="handleThumbnailError(this, \'' + NO_IMAGE_SVG + '\')" onload="this.dataset.loaded=\'true\'; this.parentElement.classList.add(\'loaded\');">' +
                     '<div class="no-image-text">No Image</div>' +
                 '</div>' +
                 '<div class="info">' +
