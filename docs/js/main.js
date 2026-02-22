@@ -565,6 +565,7 @@ function loadNextThumbnail() {
     
     img.onload = function() {
         img.dataset.loaded = 'true';
+        img.parentElement.style.background = 'transparent'; 
         isLoadingThumbnail = false;
         setTimeout(loadNextThumbnail, THUMBNAIL_DELAY_MS);
     };
