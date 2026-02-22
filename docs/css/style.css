@@ -1225,8 +1225,8 @@ h1:hover {
 }
 
 .checkbox-label-adult input[type="checkbox"] {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   margin: 0;
   accent-color: var(--danger);
   flex-shrink: 0;
