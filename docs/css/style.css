@@ -1983,6 +1983,10 @@ a.btn {
   line-height: 1.2 !important;
 }
 /* 라이트 모드 No Image */
+.thumb-wrapper {
+  background: #333333 !important;
+}
+
 [data-theme="light"] .thumb-wrapper {
   background: #e5e5e5 !important;
 }
