@@ -957,7 +957,8 @@ async function saveEditInfo() {
             file_count: 0,
             last_updated: new Date().toISOString()
         };
-
+console.log('📝 infoData:', JSON.stringify(infoData, null, 2));
+console.log('📝 folderId:', editingSeriesId);
         await API.request('edit_save_info', {
             folderId: editingSeriesId,
             infoData: infoData
