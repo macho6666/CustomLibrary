@@ -990,8 +990,8 @@ h1:hover {
 /* Description Toggle */
 .description-wrapper {
   position: relative;
-  margin-bottom: 10px;
-  padding-top: 6px;
+  margin-bottom: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-color);
 }
 
@@ -1225,8 +1225,8 @@ h1:hover {
 }
 
 .checkbox-label-adult input[type="checkbox"] {
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   margin: 0;
   accent-color: var(--danger);
   flex-shrink: 0;
