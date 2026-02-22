@@ -1982,11 +1982,11 @@ a.btn {
 .info-row.clickable .info-value {
   line-height: 1.2 !important;
 }
-/* 이미지 로드 후 배경/No Image 숨기기 */
-.thumb:not([src*="svg"]) ~ .no-image-text {
-  display: none;
+/* No Image 영역 - 테마별 색상 */
+.thumb-wrapper {
+  background: var(--bg-secondary) !important;
 }
 
-.thumb:not([src*="svg"]) {
-  background: transparent;
+.no-image-text {
+  color: var(--text-tertiary) !important;
 }
