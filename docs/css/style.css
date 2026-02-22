@@ -1174,25 +1174,26 @@ h1:hover {
 }
 
 /* 제목 + 성인작품 같은 줄 */
+/* ===== Edit Modal - 제목 + 성인작품 ===== */
 .edit-field-row {
   display: flex;
-  gap: 12px;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.edit-field-main {
-  flex: 1;
+.edit-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.edit-field-main label {
-  display: block;
+.edit-field-header > label {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-tertiary);
-  margin-bottom: 4px;
 }
 
-.edit-field-main input {
+.edit-field-row input[type="text"] {
   width: 100%;
   padding: 10px 12px;
   background: var(--bg-input);
@@ -1206,35 +1207,29 @@ h1:hover {
   box-sizing: border-box;
 }
 
-.edit-field-side {
-  flex-shrink: 0;
-  height: 42px;
-  display: flex;
-  align-items: center;
-}
-
 .checkbox-label-adult {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   white-space: nowrap;
-  height: 42px;
   margin: 0;
   padding: 0;
 }
 
-.checkbox-label-adult input {
-  width: 16px;
-  height: 16px;
+.checkbox-label-adult input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
   margin: 0;
   accent-color: var(--danger);
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .checkbox-label-adult span {
+  font-size: 11px;
   line-height: 1;
 }
 
