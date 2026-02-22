@@ -2002,3 +2002,17 @@ header h1 {
   font-weight: 400;
   letter-spacing: 1px;
 }
+.sidebar-logo {
+  font-family: 'Pacifico', cursive;
+  font-size: 24px;
+  text-align: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.sidebar-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
