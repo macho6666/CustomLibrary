@@ -546,10 +546,10 @@ function updateFavoriteIcon() {
     if (!series || !icon) return;
     
     if (favorites.includes(series.id)) {
-        icon.textContent = '★';
+        icon.textContent = '♥';
         icon.classList.add('favorite-active');
     } else {
-        icon.textContent = '☆';
+        icon.textContent = '♡';
         icon.classList.remove('favorite-active');
     }
 }
