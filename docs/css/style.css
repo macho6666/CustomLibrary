@@ -1990,3 +1990,6 @@ a.btn {
 [data-theme="light"] .no-image-text {
   color: #a3a3a3 !important;
 }
+.thumb[src*="svg"] {
+  opacity: 0;
+}
