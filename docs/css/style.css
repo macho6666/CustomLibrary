@@ -1991,5 +1991,5 @@ a.btn {
   color: #a3a3a3 !important;
 }
 .thumb[src*="svg"] {
-  opacity: 0;
+  opacity: 0 !important;
 }
