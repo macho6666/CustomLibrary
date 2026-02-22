@@ -596,10 +596,6 @@ h1:hover {
   transition: transform 0.3s ease;
 }
 
-.thumb[data-loaded="true"] + .no-image-text {
-  display: none;
-}
-
 .card:hover .thumb {
   transform: scale(1.03);
 }
