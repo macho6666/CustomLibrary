@@ -1010,6 +1010,7 @@ h1:hover {
   max-height: calc(1.6em * 4);
   overflow: hidden;
   transition: max-height 0.3s ease;
+  white-space: pre-wrap;
 }
 
 .description-wrapper.expanded .description-content {
