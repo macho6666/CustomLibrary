@@ -944,7 +944,7 @@ h1:hover {
 
 /* Detail Info */
 .detail-info {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .info-row {
@@ -960,6 +960,7 @@ h1:hover {
 
 .info-row.clickable {
   cursor: pointer;
+  background: rgba(255,0,0,0.1);  
 }
 
 .info-row.clickable:hover .info-value {
@@ -990,8 +991,8 @@ h1:hover {
 /* Description Toggle */
 .description-wrapper {
   position: relative;
-  margin-bottom: 8px;
-  padding-top: 8px;
+  margin-bottom: 16px;
+  padding-top: 12px;
   border-top: 1px solid var(--border-color);
 }
 
