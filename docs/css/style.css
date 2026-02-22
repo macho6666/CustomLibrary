@@ -745,11 +745,12 @@ h1:hover {
 .btn-favorite {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   padding: 4px;
   line-height: 1;
   transition: var(--transition);
+  color: var(--text-tertiary);
 }
 
 .btn-favorite:hover {
@@ -757,23 +758,21 @@ h1:hover {
 }
 
 .btn-favorite .favorite-active {
-  color: var(--warning);
+  color: var(--danger);
 }
 
 .btn-header-edit {
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  background: none;
+  border: none;
   color: var(--text-secondary);
-  padding: 4px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
+  padding: 4px 8px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
 }
 
 .btn-header-edit:hover {
-  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -1218,7 +1217,7 @@ h1:hover {
   font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
-  padding: 10px 0;
+  height: 100%;
 }
 
 .checkbox-label-adult:hover {
@@ -1228,7 +1227,16 @@ h1:hover {
 .checkbox-label-adult input {
   width: 14px;
   height: 14px;
+  margin: 0;
   accent-color: var(--danger);
+}
+
+.edit-field-side {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-bottom: 0;
+  height: 42px;
 }
 
 .edit-tags-container {
