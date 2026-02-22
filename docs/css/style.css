@@ -944,7 +944,7 @@ h1:hover {
 
 /* Detail Info */
 .detail-info {
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 }
 
 .info-row {
@@ -990,12 +990,8 @@ h1:hover {
 
 /* Description Toggle */
 .description-wrapper {
-  position: relative;
-  margin-bottom: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-color);
+  margin-top: 0;
 }
-
 .description-label {
   font-size: 12px;
   color: var(--text-tertiary);
