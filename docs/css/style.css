@@ -1993,3 +1993,7 @@ a.btn {
 .thumb[src*="svg"] {
   opacity: 0 !important;
 }
+/* Detail Modal 커버 - 이미지 있으면 배경 숨기기 */
+.detail-cover-wrapper {
+  background: transparent !important;
+}
