@@ -944,7 +944,7 @@ h1:hover {
 
 /* Detail Info */
 .detail-info {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .info-row {
@@ -991,7 +991,7 @@ h1:hover {
 .description-wrapper {
   position: relative;
   margin-bottom: 16px;
-  padding-top: 12px;
+  padding-top: 8px;
   border-top: 1px solid var(--border-color);
 }
 
