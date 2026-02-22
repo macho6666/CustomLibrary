@@ -988,7 +988,11 @@ h1:hover {
 
 /* Description Toggle */
 .description-wrapper {
-  margin-top: 0;
+  position: relative;
+  margin-bottom: 16px;
+  margin-top: 12px;    
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
 }
 .description-label {
   font-size: 12px;
