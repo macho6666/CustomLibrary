@@ -1010,7 +1010,8 @@ h1:hover {
   max-height: calc(1.6em * 4);
   overflow: hidden;
   transition: max-height 0.3s ease;
-  white-space: pre-wrap;
+  white-space: pre-wrap !important;  /* ← !important 추가 */
+  word-break: break-word;            /* ← 이것도 추가 */
 }
 
 .description-wrapper.expanded .description-content {
@@ -1224,8 +1225,8 @@ h1:hover {
 }
 
 .checkbox-label-adult input[type="checkbox"] {
-  width: 13px;
-  height: 13px;
+  width: 11px;
+  height: 11px;
   margin: 0;
   accent-color: var(--danger);
   flex-shrink: 0;
