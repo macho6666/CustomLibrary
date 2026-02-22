@@ -1642,3 +1642,5 @@ window.syncToDrive = syncToDrive;
 window.syncFromDrive = syncFromDrive;
 window.showFavorites = showFavorites;
 window.toggleFavorite = toggleFavorite;
+window.showFavorites = showFavorites;
+window.toggleFavorite = toggleFavorite;
