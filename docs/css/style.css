@@ -644,6 +644,10 @@ h1:hover {
   text-overflow: ellipsis;
 }
 
+.author.adult::before {
+  content: '🔞 ';
+}
+
 .meta {
   display: flex;
   justify-content: space-between;
@@ -724,6 +728,52 @@ h1:hover {
 .modal-title {
   font-size: 15px;
   font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-favorite {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: var(--transition);
+}
+
+.btn-favorite:hover {
+  transform: scale(1.2);
+}
+
+.btn-favorite .favorite-active {
+  color: var(--warning);
+}
+
+.btn-header-edit {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-header-edit:hover {
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -848,17 +898,19 @@ h1:hover {
 }
 
 .btn-refresh-episodes {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
+  cursor: pointer;
   transition: var(--transition);
 }
 
 .btn-refresh-episodes:hover {
   background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .episode-list-wrapper {
@@ -977,6 +1029,7 @@ h1:hover {
   display: none;
 }
 
+/* 화살표 버튼 - 배경 제거 */
 .desc-toggle-btn {
   display: flex;
   align-items: center;
@@ -984,9 +1037,8 @@ h1:hover {
   width: 100%;
   padding: 8px;
   margin-top: 8px;
-  background: var(--bg-input);
+  background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
   color: var(--text-tertiary);
   font-size: 12px;
   cursor: pointer;
@@ -994,47 +1046,24 @@ h1:hover {
 }
 
 .desc-toggle-btn:hover {
-  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
 .desc-toggle-btn::after {
   content: '';
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
   transition: transform 0.25s ease;
-  margin-top: -2px;
+  margin-top: -4px;
 }
 
 .description-wrapper.expanded .desc-toggle-btn::after {
   transform: rotate(-135deg);
-  margin-top: 2px;
-}
-
-.detail-actions {
-  display: flex;
-  justify-content: center;
-}
-
-.btn-edit-detail {
-  padding: 12px 48px;
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font-primary);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.btn-edit-detail:hover {
-  background: var(--accent-hover);
+  margin-top: 4px;
 }
 /* ===== EDIT MODAL ===== */
 .edit-modal {
@@ -1145,8 +1174,61 @@ h1:hover {
   border-color: var(--accent);
 }
 
-.edit-field-inline {
-  padding-top: 8px;
+/* 제목 + 성인작품 같은 줄 */
+.edit-field-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.edit-field-main {
+  flex: 1;
+}
+
+.edit-field-main label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.edit-field-main input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-primary);
+  outline: none;
+}
+
+.edit-field-side {
+  flex-shrink: 0;
+  padding-bottom: 2px;
+}
+
+.checkbox-label-adult {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  padding: 10px 0;
+}
+
+.checkbox-label-adult:hover {
+  color: var(--text-primary);
+}
+
+.checkbox-label-adult input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--danger);
 }
 
 .edit-tags-container {
@@ -1566,7 +1648,6 @@ h1:hover {
 .ep-edit-btn:hover {
   background: var(--bg-hover);
 }
-
 /* ===== VIEWER ===== */
 .viewer-overlay {
   display: none;
@@ -1835,6 +1916,13 @@ input[type="range"]::-webkit-slider-thumb {
   }
   .sidebar { width: 100%; max-width: 300px; }
   .calendar-stats { grid-template-columns: repeat(2, 1fr); }
+  .edit-field-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .edit-field-side {
+    padding-top: 8px;
+  }
 }
 
 @media (max-width: 480px) {
