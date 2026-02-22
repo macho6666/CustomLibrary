@@ -958,8 +958,7 @@ h1:hover {
 }
 
 .info-row.clickable {
-  cursor: pointer;
-  background: rgba(255,0,0,0.1);  
+  cursor: pointer; 
 }
 
 .info-row.clickable:hover .info-value {
