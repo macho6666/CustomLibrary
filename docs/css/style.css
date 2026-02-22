@@ -1983,10 +1983,10 @@ a.btn {
   line-height: 1.2 !important;
 }
 /* 이미지 로드 후 배경/No Image 숨기기 */
-.thumb-wrapper.loaded {
-  background: transparent !important;
+.thumb:not([src*="svg"]) ~ .no-image-text {
+  display: none;
 }
 
-.thumb-wrapper.loaded .no-image-text {
-  display: none;
+.thumb:not([src*="svg"]) {
+  background: transparent;
 }
