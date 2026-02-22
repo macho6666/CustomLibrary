@@ -982,6 +982,7 @@ h1:hover {
 .info-link {
   color: var(--link);
   cursor: pointer;
+  line-height: 1;
 }
 
 /* Description Toggle */
