@@ -184,7 +184,7 @@ async function refreshDB(forceId, silent, bypassCache) {
 
         allSeries = seriesList;
         renderGrid(allSeries);
-        showToast("📚 Library loaded");
+        showToast("Library loaded");
 
     } catch (e) {
         console.error("Library Fetch Error:", e);
