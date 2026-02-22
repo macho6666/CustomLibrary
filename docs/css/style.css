@@ -949,13 +949,12 @@ h1:hover {
 
 .info-row {
   display: flex;
-  align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid var(--border-color);
 }
 
 .info-row:last-child {
-  border-bottom: none; 
+  border-bottom: 1px solid var(--border-color);
 }
 
 .info-row.clickable {
