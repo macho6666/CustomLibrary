@@ -936,10 +936,10 @@ async function saveEditInfo() {
         var authorsRaw = document.getElementById('editAuthor').value.trim();
         var authors = authorsRaw ? authorsRaw.split(',').map(function(a) { return a.trim(); }).filter(function(a) { return a; }) : [];
 
+        // ✅ 원본 형식으로 수정
         var infoData = {
-            id: document.getElementById('editSourceId').value.trim() || '',
+            id: document.getElementById('editSourceId').value.trim(),
             title: document.getElementById('editTitle').value.trim(),
-            author: authors.length > 0 ? authors[0] : 'Unknown',
             metadata: {
                 authors: authors.length > 0 ? authors : ['Unknown'],
                 status: document.getElementById('editStatus').value,
@@ -950,7 +950,7 @@ async function saveEditInfo() {
                 platformUrl: document.getElementById('editPlatformUrl').value.trim()
             },
             url: document.getElementById('editUrl').value.trim(),
-            platformUrl: document.getElementById('editPlatformUrl').value.trim(),
+            author: authors.length > 0 ? authors[0] : 'Unknown',
             last_episode: 0,
             file_count: 0,
             last_updated: new Date().toISOString()
@@ -980,7 +980,7 @@ async function saveEditInfo() {
             series.name = infoData.title;
             series.sourceId = infoData.id;
             series.sourceUrl = infoData.url;
-            series.platformUrl = infoData.platformUrl;
+            series.platformUrl = infoData.metadata.platformUrl;
             series.category = infoData.metadata.category;
             series.metadata = {
                 authors: infoData.metadata.authors,
