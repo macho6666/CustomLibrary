@@ -49,7 +49,7 @@ window.addEventListener('DOMContentLoaded', function() {
     if(el) el.innerText = "Viewer " + VIEWER_VERSION;
     
     if (API.isConfigured()) {
-        showToast("🚀 저장된 설정으로 연결합니다...");
+        showToast("Connecting...");
         refreshDB(null, true);
         loadDomains();
     } else {
@@ -57,7 +57,7 @@ window.addEventListener('DOMContentLoaded', function() {
             if (!API.isConfigured()) {
                 document.getElementById('configModal').style.display = 'flex';
             } else {
-                showToast("🚀 저장된 설정으로 연결합니다...");
+                showToast("Connecting...");
                 refreshDB(null, true);
             }
             loadDomains();
@@ -73,7 +73,7 @@ function handleMessage(event) {
         if (url && folderId) {
             API.setConfig(url, folderId, apiKey);
             document.getElementById('configModal').style.display = 'none';
-            showToast("⚡️ 자동 설정 완료!");
+            showToast("Auto-configured");
             refreshDB();
         }
     }
@@ -184,11 +184,11 @@ async function refreshDB(forceId, silent, bypassCache) {
 
         allSeries = seriesList;
         renderGrid(allSeries);
-        showToast("📚 라이브러리 업데이트 완료");
+        showToast("📚 Library loaded");
 
     } catch (e) {
         console.error("Library Fetch Error:", e);
-        showToast("❌ 로드 실패: " + e.message, 5000);
+        showToast("❌ Load failed: " + e.message, 5000);
     } finally {
         if(loader) loader.style.display = 'none';
     }
